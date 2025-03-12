@@ -2,6 +2,19 @@ import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { ConfigModule } from '@nestjs/config';
 import { Role } from '../resources/roles/models/role.model';
+import { Restaurant } from '../resources/restaurants/models/restaurant.model';
+import { User } from '../resources/users/models/user.model';
+import { Permission } from '../resources/permissions/models/permission.model';
+import { RolePermission } from '../resources/roles/models/role-permission.model';
+import { Menu } from '../resources/menus/models/menu.model';
+import { MenuItemCategory } from '../resources/menus/models/menu-item-category.model';
+import { MenuItems } from '../resources/menus/models/menu-item.model';
+import { TableCategory } from '../resources/tables/models/table-category.model';
+import { Tables } from '../resources/tables/models/table.model';
+import { Order } from '../resources/orders/models/order.model';
+import { OrderItem } from '../resources/orders/models/order-item.model';
+import { Payment } from '../resources/payments/models/payment.model';
+import { Invoice } from '../resources/invoices/models/invoice.model';
 
 @Module({
   imports: [
@@ -49,12 +62,27 @@ import { Role } from '../resources/roles/models/role.model';
         return {
           ...dbConfig,
           autoLoadModels: true,
-          sync: { alter: false, force: false },
+          sync: { alter: true, force: false }, // Careful!! force: true will delete all the data from database
           logging: mode === 'development' ? console.log : false, // Enable logging in dev mode
         };
       },
     }),
-    SequelizeModule.forFeature([Role]),
+    SequelizeModule.forFeature([
+      Restaurant,
+      Role,
+      Permission,
+      RolePermission,
+      User,
+      Menu,
+      MenuItemCategory,
+      MenuItems,
+      TableCategory,
+      Tables,
+      Order,
+      OrderItem,
+      Payment,
+      Invoice
+    ]),
   ],
 })
 export class DatabaseModule {}
