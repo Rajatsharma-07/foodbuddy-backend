@@ -16,16 +16,16 @@ export class RolePermission extends Model {
         type: DataType.INTEGER,
         allowNull: false
     })
-    role_id: number
+    declare role_id: number
     @BelongsTo(() => Role)
-    role: Role
+    declare role: Role
 
     @ForeignKey(() => Permission)
     @Column({
         type: DataType.INTEGER,
         allowNull: false
     })
-    permission_id: number
+    declare permission_id: number
     @BelongsTo(() => Permission)
-    permission: Permission
+    declare permission: Permission
 }

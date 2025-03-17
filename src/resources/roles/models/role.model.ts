@@ -13,5 +13,5 @@ export class Role extends Model {
         type: DataType.STRING,
         allowNull: false
     })
-    name: string
+    declare name: string
 }

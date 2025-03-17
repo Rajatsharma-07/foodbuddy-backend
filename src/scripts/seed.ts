@@ -1,6 +1,6 @@
 import { Sequelize } from "sequelize-typescript";
 import * as dotenv from "dotenv";
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from "bcrypt";
 
 // Load environment variables
 dotenv.config();
@@ -113,8 +113,20 @@ async function seedData() {
     { id: 3, name: ROLES.CAPTAIN },
   ]);
 
+  await Restaurant.create({
+    id: 1,
+    name: "Demo restaurant",
+    address: "Demo address",
+    city: "Demo city",
+    state: "Demo state",
+    country: "Demo country",
+    pincode: "Demo pindode",
+    is_active: true,
+    is_deleted: false,
+  });
+
   // Hash Passwords
-  const hashedPassword = await bcrypt.hash('admin@123', BCRYPT_ROUNDS);
+  const hashedPassword = await bcrypt.hash("admin@123", BCRYPT_ROUNDS);
 
   // Insert Users
   await User.bulkCreate([
@@ -122,12 +134,12 @@ async function seedData() {
       id: 1,
       first_name: "Rajat",
       last_name: "Sharma",
-      email: "rajatsharmabkn07.com",
+      email: "rajatsharmabkn07@gmail.com",
       password: hashedPassword,
       is_active: true,
       is_superuser: true,
       is_deleted: false,
-      role_id: 1
+      role_id: 1,
     },
     {
       id: 2,
@@ -138,7 +150,49 @@ async function seedData() {
       is_active: true,
       is_superuser: true,
       is_deleted: false,
-      role_id: 1
+      role_id: 1,
+    },
+    {
+      id: 3,
+      first_name: "Demo",
+      last_name: "Demo",
+      email: "demo@gmail.com",
+      password: hashedPassword,
+      is_active: true,
+      is_superuser: false,
+      is_deleted: false,
+      role_id: 1,
+      restaurant_id: 1,
+    },
+  ]);
+
+  await Permission.bulkCreate([
+    {
+      id: 1,
+      name: "Fetch All Users",
+      resource: "users",
+      url: "/users",
+      action: "GET",
+    },
+    {
+      id: 2,
+      name: "View Users",
+      resource: "users",
+      url: "/users/:id",
+      action: "GET",
+    },
+  ]);
+
+  await RolePermission.bulkCreate([
+    {
+      id: 1,
+      role_id: 1,
+      permission_id: 1,
+    },
+    {
+      id: 2,
+      role_id: 1,
+      permission_id: 2,
     },
   ]);
 }

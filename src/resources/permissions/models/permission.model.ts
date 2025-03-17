@@ -13,23 +13,23 @@ export class Permission extends Model {
         type: DataType.STRING,
         allowNull: false
     })
-    name: string
+    declare name: string
 
     @Column({
         type: DataType.STRING,
         allowNull: false
     })
-    resource: string
+    declare resource: string
 
     @Column({
         type: DataType.STRING,
         allowNull: false
     })
-    url: string
+    declare url: string
 
     @Column({
         type: DataType.STRING,
         allowNull: false
     })
-    action: string
+    declare action: string
 }

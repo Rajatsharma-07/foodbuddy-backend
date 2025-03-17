@@ -13,47 +13,47 @@ export class Restaurant extends Model {
         type: DataType.STRING,
         allowNull: false
     })
-    name: string
+    declare name: string
 
     @Column({
         type: DataType.STRING,
         allowNull: false
     })
-    address: string
+    declare address: string
 
     @Column({
         type: DataType.STRING,
         allowNull: false
     })
-    city: string
+    declare city: string
 
     @Column({
         type: DataType.STRING,
         allowNull: false
     })
-    state: string
+    declare state: string
 
     @Column({
         type: DataType.STRING,
         allowNull: false
     })
-    country: string
+    declare country: string
 
     @Column({
         type: DataType.STRING,
         allowNull: false
     })
-    pincode: string
+    declare pincode: string
 
     @Column({
         type: DataType.BOOLEAN,
         defaultValue: false
     })
-    is_active: boolean
+    declare is_active: boolean
 
     @Column({
         type: DataType.BOOLEAN,
         defaultValue: false
     })
-    is_deleted: boolean
+    declare is_deleted: boolean
 }
