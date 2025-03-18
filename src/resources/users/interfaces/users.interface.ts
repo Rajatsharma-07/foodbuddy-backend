@@ -24,3 +24,8 @@ export interface UserUpdateInterface {
   success: boolean;
   data: [number]
 }
+
+export interface UserDeleteInterface {
+  success: boolean;
+  data: [number]
+}

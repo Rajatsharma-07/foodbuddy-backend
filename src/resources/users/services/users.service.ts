@@ -9,6 +9,7 @@ import { User } from "../models/user.model";
 import { UserCreateDto, UserLoginDto, UserUpdateDto } from "../dtos/users.dto";
 import {
   UserCreateInterface,
+  UserDeleteInterface,
   UserFetchAllInterface,
   UserLoginInterface,
   UserRetrieveInterface,
@@ -61,7 +62,10 @@ export class UsersService {
       };
 
       if (!user.is_superuser) {
-        filter["where"] = { restaurant_id: user.restaurant_id };
+        filter["where"] = {
+          restaurant_id: user.restaurant_id,
+          is_deleted: false,
+        };
       }
       const users = await User.findAll(filter);
       return {
@@ -78,7 +82,7 @@ export class UsersService {
     id: number
   ): Promise<UserRetrieveInterface> {
     try {
-      const where_clause = { id };
+      const where_clause = { id, is_deleted: false };
       const requested_user = await User.findOne({
         where: where_clause,
         attributes: { exclude: ["password"] },
@@ -95,7 +99,7 @@ export class UsersService {
       });
 
       if (!requested_user) {
-        throw new Error(errors.USER_DOES_NOT_EXISTS);
+        throw new BadRequestException(errors.USER_DOES_NOT_EXISTS);
       }
 
       if (
@@ -111,10 +115,7 @@ export class UsersService {
         data: requested_user,
       };
     } catch (error) {
-      if (error instanceof ForbiddenException) {
-        throw error;
-      }
-      throw new InternalServerErrorException();
+      throw error
     }
   }
 
@@ -152,6 +153,10 @@ export class UsersService {
         throw new Error(errors.USER_DOES_NOT_EXISTS);
       }
 
+      if (!(await this.is_superuser(user)) && (curr_data.is_deleted)) {
+        throw new Error(errors.USER_DOES_NOT_EXISTS);
+      }
+
       if (!(await this.has_permission_to_update(user, curr_data, data))) {
         throw new ForbiddenException(errors.ACCESS_DENIED);
       }
@@ -169,6 +174,33 @@ export class UsersService {
       return {
         success: true,
         data: updated_user,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async delete(
+    user: Partial<User> & { role: string },
+    id: number
+  ): Promise<UserDeleteInterface> {
+    try {
+      const curr_data = await User.findOne({
+        where: { id, is_deleted: false },
+      });
+      if (!curr_data) {
+        throw new BadRequestException(errors.USER_DOES_NOT_EXISTS);
+      }
+      if (!(await this.is_superuser(user))) {
+        throw new ForbiddenException(errors.ACCESS_DENIED);
+      }
+      const deleted_user = await User.update(
+        { is_deleted: true },
+        { where: { id } }
+      );
+      return {
+        success: true,
+        data: deleted_user,
       };
     } catch (error) {
       throw error;
@@ -257,11 +289,11 @@ export class UsersService {
 
   async validate_user_email(
     email: string,
-    admin?: boolean
+    admin_panel?: boolean
   ): Promise<User | null> {
     try {
-      let where_clause = { email, is_superuser: false };
-      if (admin) {
+      let where_clause = { email, is_superuser: false, is_deleted: false };
+      if (admin_panel) {
         where_clause["is_superuser"] = true;
       }
       const user = await User.findOne({
@@ -301,7 +333,11 @@ export class UsersService {
 
   async generate_jwt_token(user: Partial<User>): Promise<string> {
     try {
-      const payload = {...user, role: user?.role?.name, restaurant: user?.restaurant?.name}
+      const payload = {
+        ...user,
+        role: user?.role?.name,
+        restaurant: user?.restaurant?.name,
+      };
       return await this.jwtService.sign(payload);
     } catch (error) {
       throw new InternalServerErrorException();

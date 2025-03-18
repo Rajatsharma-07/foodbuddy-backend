@@ -1,6 +1,7 @@
 export enum errors {
   INCORRECT_EMAIL_OR_PASSWORD = "You have entered incorrect username or password.",
   ACCOUNT_IS_DEACTIVATED = "Your account is deactivated, contact your administrator.",
+  INVALID_USER_ID = "Invalid user ID",
   EMAIL_IS_REQUIRED = "Email is required",
   MISSING_OR_INVALID_TOKEN = "Missing or Invalid Token.",
   INVALID_OR_EXPIRED_TOKEN = "Invalid or Expired Token.",
