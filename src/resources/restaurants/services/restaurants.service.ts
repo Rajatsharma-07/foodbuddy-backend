@@ -111,7 +111,7 @@ export class RestaurantsService {
     data: RestaurantCreateDto
   ): Promise<RestaurantUpdateInterface> {
     try {
-      if (!((await is_superuser(user)) && is_admin(user))) {
+      if (!((await is_superuser(user)) || is_admin(user))) {
         throw new ForbiddenException(errors.ACCESS_DENIED);
       }
 
@@ -132,7 +132,7 @@ export class RestaurantsService {
     id: number
   ): Promise<RestaurantDeleteInterface> {
     try {
-      if (!((await is_superuser(user)) && is_admin(user))) {
+      if (!(await is_superuser(user))) {
         throw new ForbiddenException(errors.ACCESS_DENIED);
       }
 
