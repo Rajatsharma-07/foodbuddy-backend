@@ -20,7 +20,7 @@ import * as bcrypt from "bcrypt";
 import { JwtService } from "@nestjs/jwt";
 import { Role } from "src/resources/roles/models/role.model";
 import { Restaurant } from "src/resources/restaurants/models/restaurant.model";
-import { ROLES } from "src/constants/constants";
+import { is_superuser, is_admin } from "src/common/permission";
 
 @Injectable()
 export class UsersService {
@@ -54,7 +54,7 @@ export class UsersService {
     user: Partial<User> & { role: string }
   ): Promise<UserFetchAllInterface> {
     try {
-      if (!((await this.is_superuser(user)) || (await this.is_admin(user)))) {
+      if (!((await is_superuser(user)) || (await is_admin(user)))) {
         throw new ForbiddenException(errors.ACCESS_DENIED);
       }
       let filter = {
@@ -104,7 +104,7 @@ export class UsersService {
 
       if (
         (id !== user.id &&
-          !((await this.is_superuser(user)) || (await this.is_admin(user)))) ||
+          !((await is_superuser(user)) || (await is_admin(user)))) ||
         !(await this.has_permission(user, requested_user))
       ) {
         throw new ForbiddenException(errors.ACCESS_DENIED);
@@ -115,7 +115,7 @@ export class UsersService {
         data: requested_user,
       };
     } catch (error) {
-      throw error
+      throw error;
     }
   }
 
@@ -125,7 +125,7 @@ export class UsersService {
   ): Promise<UserCreateInterface> {
     try {
       if (
-        !((await this.is_superuser(user)) || (await this.is_admin(user))) ||
+        !((await is_superuser(user)) || (await is_admin(user))) ||
         !(await this.has_permission_to_create(user, data))
       ) {
         throw new ForbiddenException(errors.ACCESS_DENIED);
@@ -153,7 +153,7 @@ export class UsersService {
         throw new Error(errors.USER_DOES_NOT_EXISTS);
       }
 
-      if (!(await this.is_superuser(user)) && (curr_data.is_deleted)) {
+      if (!(await is_superuser(user)) && curr_data.is_active) {
         throw new Error(errors.USER_DOES_NOT_EXISTS);
       }
 
@@ -191,11 +191,11 @@ export class UsersService {
       if (!curr_data) {
         throw new BadRequestException(errors.USER_DOES_NOT_EXISTS);
       }
-      if (!(await this.is_superuser(user))) {
+      if (!(await is_superuser(user))) {
         throw new ForbiddenException(errors.ACCESS_DENIED);
       }
       const deleted_user = await User.update(
-        { is_deleted: true },
+        { is_active: false },
         { where: { id } }
       );
       return {
@@ -205,16 +205,6 @@ export class UsersService {
     } catch (error) {
       throw error;
     }
-  }
-
-  async is_superuser(
-    user: Partial<User> & { role: string }
-  ): Promise<Boolean | undefined> {
-    return user.is_superuser;
-  }
-
-  async is_admin(user: Partial<User> & { role: string }): Promise<Boolean> {
-    return !user.is_superuser && user?.role === ROLES.ADMIN;
   }
 
   async has_permission(
@@ -269,9 +259,9 @@ export class UsersService {
       }
 
       return true;
-    } else if (user?.id !== curr_data?.id && (await this.is_superuser(user))) {
+    } else if (user?.id !== curr_data?.id && (await is_superuser(user))) {
       return true;
-    } else if (user?.id !== curr_data?.id && (await this.is_admin(user))) {
+    } else if (user?.id !== curr_data?.id && (await is_admin(user))) {
       if (curr_data?.is_superuser !== data?.is_superuser) {
         throw new ForbiddenException(
           errors.CANNOT_UPDATE_USER_SUPERUSER_STATUS

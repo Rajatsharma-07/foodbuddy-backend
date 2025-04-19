@@ -1,4 +1,5 @@
-import { Column, DataType, Model, Table } from "sequelize-typescript";
+import { Column, DataType, ForeignKey, HasMany, Model, Table } from "sequelize-typescript";
+import { User } from "src/resources/users/models/user.model";
 
 @Table({tableName: 'restaurants'})
 export class Restaurant extends Model {
@@ -51,9 +52,6 @@ export class Restaurant extends Model {
     })
     declare is_active: boolean
 
-    @Column({
-        type: DataType.BOOLEAN,
-        defaultValue: false
-    })
-    declare is_deleted: boolean
+    @HasMany(() => User)
+    users: User[]
 }

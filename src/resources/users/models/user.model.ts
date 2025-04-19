@@ -53,12 +53,6 @@ export class User extends Model {
     type: DataType.BOOLEAN,
     defaultValue: false,
   })
-  declare is_deleted: boolean;
-
-  @Column({
-    type: DataType.BOOLEAN,
-    defaultValue: false
-  })
   declare is_superuser: boolean;
 
   @ForeignKey(() => Role)
