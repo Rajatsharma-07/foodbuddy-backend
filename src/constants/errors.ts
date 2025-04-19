@@ -22,5 +22,14 @@ export enum errors {
 
   // Restaurants related error
   RESTAURANT_DOES_NOT_EXISTS = "This restaurant does not exists.",
+  RESTAURANT_NOT_SELECTED = "Please select a restaurant.",
+  RESTAURANT_ACCESS_DENIED = "You do not have access to this restaurant.",
 
+  // Tables related errors
+  TABLE_DOES_NOT_EXISTS = "This table does not exists.",
+  TABLE_ACCES_DENIED = "You do not have access to this table.",
+
+  // Table Categories related errors
+  TABLE_CATEGORY_DOES_NOT_EXISTS = "This table category does not exists.",
+  TABLE_CATEGORY_ACCES_DENIED = "You do not have access to this table category.",
 }
