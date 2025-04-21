@@ -32,4 +32,9 @@ export enum errors {
   // Table Categories related errors
   TABLE_CATEGORY_DOES_NOT_EXISTS = "This table category does not exists.",
   TABLE_CATEGORY_ACCES_DENIED = "You do not have access to this table category.",
+
+  // Menu related errors
+  MENU_DOES_NOT_EXISTS = "This Menu does not exists.",
+  MENU_ACCES_DENIED = "You do not have access to this Menu.",
+  
 }

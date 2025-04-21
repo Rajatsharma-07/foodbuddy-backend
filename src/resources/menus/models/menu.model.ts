@@ -20,7 +20,7 @@ export class Menu extends Model {
         type: DataType.BOOLEAN,
         defaultValue: false
     })
-    is_deleted: boolean
+    is_active: boolean
 
     @ForeignKey(() => Restaurant)
     @Column({
