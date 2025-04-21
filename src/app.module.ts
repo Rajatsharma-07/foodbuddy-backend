@@ -5,6 +5,7 @@ import { DatabaseModule } from "./database/database.module";
 import { UsersModule } from "./resources/users/user.module";
 import { RestaurantsModule } from "./resources/restaurants/restaurant.module";
 import { TablesModule } from "./resources/tables/table.module";
+import { MenusModule } from "./resources/menus/menu.module";
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { TablesModule } from "./resources/tables/table.module";
     UsersModule,
     RestaurantsModule,
     TablesModule,
+    MenusModule,
   ],
   controllers: [AppController],
   providers: [AppService],
