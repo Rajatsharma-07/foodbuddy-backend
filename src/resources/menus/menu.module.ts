@@ -3,6 +3,8 @@ import { JwtModule } from "@nestjs/jwt";
 import { MenusController } from "./controllers/menus.controller";
 import { MenusProvider } from "./providers/menus.provider";
 import { MenusService } from "./services/menus.service";
+import { MenuItemCategoriesController } from "./controllers/menu-item-categories.controller";
+import { MenuItemCategoriesService } from "./services/menu-item-categories.service";
 
 @Module({
   imports: [
@@ -11,8 +13,8 @@ import { MenusService } from "./services/menus.service";
       signOptions: { expiresIn: "24h" },
     }),
   ],
-  controllers: [MenusController],
-  providers: [...MenusProvider, MenusService],
-  exports: [...MenusProvider, MenusService],
+  controllers: [MenusController, MenuItemCategoriesController],
+  providers: [...MenusProvider, MenusService, MenuItemCategoriesService],
+  exports: [...MenusProvider, MenusService, MenuItemCategoriesService],
 })
 export class MenusModule {}
