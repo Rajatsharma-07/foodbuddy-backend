@@ -21,6 +21,10 @@ export class MenusService {
         throw new ForbiddenException(errors.RESTAURANT_NOT_SELECTED);
       }
 
+      if (!((await is_superuser(user)) && user.restaurant_id !== query?.restaurant_id)) {
+        throw new ForbiddenException(errors.MENU_ACCES_DENIED);
+      }
+
       let where_clause = {
         is_active: true,
       };
@@ -103,11 +107,11 @@ export class MenusService {
         throw new ForbiddenException(errors.MENU_ACCES_DENIED);
       }
 
-      await Menu.update(data, { where: { id } });
+      const updated_menu = await Menu.update(data, { where: { id } });
 
       return {
         success: true,
-        data: [id],
+        data: updated_menu,
       };
     } catch (error) {
       throw error;

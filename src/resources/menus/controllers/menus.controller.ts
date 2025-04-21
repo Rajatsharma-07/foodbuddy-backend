@@ -18,7 +18,7 @@ import { MenuCreateDto, MenuFetchAllQueryDto, MenuUpdateDto } from "../dtos/menu
 
 @Controller("menus")
 export class MenusController {
-  constructor(private readonly restaurantService: MenusService) {}
+  constructor(private readonly menuService: MenusService) {}
 
   @Get()
   @UseGuards(AuthGuard)
@@ -28,7 +28,7 @@ export class MenusController {
   ): Promise<MenuFetchAllInterface> {
     try {
       const user = req.user;
-      const response = await this.restaurantService.fetch_all(user, query);
+      const response = await this.menuService.fetch_all(user, query);
       return response;
     } catch (error) {
       throw error;
@@ -43,7 +43,7 @@ export class MenusController {
   ): Promise<MenuRetrieveInterface> {
     try {
       const user = req.user;
-      const response = await this.restaurantService.retrieve(user, id);
+      const response = await this.menuService.retrieve(user, id);
       return response;
     } catch (error) {
       throw error;
@@ -58,7 +58,7 @@ export class MenusController {
     ): Promise<MenuCreateInterface> {
       try {
         const user = req.user;
-        const response = await this.restaurantService.create(user, data);
+        const response = await this.menuService.create(user, data);
         return response;
       } catch (error) {
         throw error;
@@ -74,7 +74,7 @@ export class MenusController {
   ): Promise<MenuUpdateInterface> {
     try {
       const user = req.user;
-      const response = await this.restaurantService.update(user, id, data);
+      const response = await this.menuService.update(user, id, data);
       return response;
     } catch (error) {
       throw error;
@@ -90,7 +90,7 @@ export class MenusController {
   ): Promise<MenuDeleteInterface> {
     try {
       const user = req.user;
-      const response = await this.restaurantService.delete(user, id);
+      const response = await this.menuService.delete(user, id);
       return response;
     } catch (error) {
       throw error;

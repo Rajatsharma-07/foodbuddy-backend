@@ -1,4 +1,5 @@
-import { Model, Column, DataType, Table } from "sequelize-typescript";
+import { Model, Column, DataType, Table, ForeignKey, BelongsTo } from "sequelize-typescript";
+import { Restaurant } from "src/resources/restaurants/models/restaurant.model";
 
 @Table({tableName: 'menuitemcategories'})
 export class MenuItemCategory extends Model {
@@ -14,4 +15,13 @@ export class MenuItemCategory extends Model {
         allowNull: false
     })
     name: string
+
+    @ForeignKey(() => Restaurant)
+    @Column({
+        type: DataType.INTEGER,
+        allowNull: false
+    })
+    restaurant_id: number
+    @BelongsTo(() => Restaurant)
+    restaurant: Restaurant
 }
