@@ -7,8 +7,18 @@ import { is_superuser } from "src/common/permission";
 import { errors } from "src/constants/errors";
 import { User } from "src/resources/users/models/user.model";
 import { Menu } from "../models/menu.model";
-import { MenuCreateInterface, MenuDeleteInterface, MenuFetchAllInterface, MenuRetrieveInterface, MenuUpdateInterface } from "../interfaces/menus.interface";
-import { MenuCreateDto, MenuFetchAllQueryDto, MenuUpdateDto } from "../dtos/menus.dto";
+import {
+  MenuCreateInterface,
+  MenuDeleteInterface,
+  MenuFetchAllInterface,
+  MenuRetrieveInterface,
+  MenuUpdateInterface,
+} from "../interfaces/menus.interface";
+import {
+  MenuCreateDto,
+  MenuFetchAllQueryDto,
+  MenuUpdateDto,
+} from "../dtos/menus.dto";
 
 @Injectable()
 export class MenusService {
@@ -21,7 +31,12 @@ export class MenusService {
         throw new ForbiddenException(errors.RESTAURANT_NOT_SELECTED);
       }
 
-      if (!((await is_superuser(user)) && user.restaurant_id !== query?.restaurant_id)) {
+      if (
+        !(
+          (await is_superuser(user)) &&
+          user.restaurant_id !== query?.restaurant_id
+        )
+      ) {
         throw new ForbiddenException(errors.MENU_ACCES_DENIED);
       }
 
@@ -58,7 +73,7 @@ export class MenusService {
         throw new BadRequestException(errors.MENU_DOES_NOT_EXISTS);
       }
 
-      if (!is_superuser(user) && user.restaurant_id!== menu.restaurant_id) {
+      if (!is_superuser(user) && user.restaurant_id !== menu.restaurant_id) {
         throw new ForbiddenException(errors.MENU_ACCES_DENIED);
       }
 
@@ -76,11 +91,11 @@ export class MenusService {
     data: MenuCreateDto
   ): Promise<MenuCreateInterface> {
     try {
-      if (!is_superuser(user) && user.restaurant_id!== data.restaurant_id) {
+      if (!is_superuser(user) && user.restaurant_id !== data.restaurant_id) {
         throw new ForbiddenException(errors.ACCESS_DENIED);
       }
 
-      const menu = await Menu.create({...data });
+      const menu = await Menu.create({ ...data });
 
       return {
         success: true,
@@ -94,7 +109,7 @@ export class MenusService {
   async update(
     user: Partial<User> & { role: string },
     id: number,
-    data: Partial<MenuUpdateDto>
+    data: MenuUpdateDto
   ): Promise<MenuUpdateInterface> {
     try {
       const menu = await Menu.findByPk(id);
@@ -103,7 +118,7 @@ export class MenusService {
         throw new BadRequestException(errors.MENU_DOES_NOT_EXISTS);
       }
 
-      if (!is_superuser(user) && user.restaurant_id!== menu.restaurant_id) {
+      if (!is_superuser(user) && user.restaurant_id !== menu.restaurant_id) {
         throw new ForbiddenException(errors.MENU_ACCES_DENIED);
       }
 
@@ -129,7 +144,7 @@ export class MenusService {
         throw new BadRequestException(errors.MENU_DOES_NOT_EXISTS);
       }
 
-      if (!is_superuser(user) && user.restaurant_id!== menu.restaurant_id) {
+      if (!is_superuser(user) && user.restaurant_id !== menu.restaurant_id) {
         throw new ForbiddenException(errors.MENU_ACCES_DENIED);
       }
 
@@ -137,7 +152,7 @@ export class MenusService {
 
       return {
         success: true,
-        data: deleted_menu
+        data: deleted_menu,
       };
     } catch (error) {
       throw error;

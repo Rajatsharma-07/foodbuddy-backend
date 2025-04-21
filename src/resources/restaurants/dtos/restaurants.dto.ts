@@ -23,7 +23,7 @@ export class RestaurantCreateDto {
   is_active: boolean;
 }
 
-export class UserUpdateDto {
+export class RestaurantUpdateDto {
   @IsOptional()
   @IsString()
   name: string;
