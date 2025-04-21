@@ -93,7 +93,7 @@ import { MenuItemCategory } from "../models/menu-item-category.model";
     async update(
       user: Partial<User> & { role: string },
       id: number,
-      data: Partial<MenuItemCategoryUpdateDto>
+      data: MenuItemCategoryUpdateDto
     ): Promise<MenuItemCategoryUpdateInterface> {
       try {
         const menu_item_category = await MenuItemCategory.findByPk(id);

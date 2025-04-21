@@ -5,6 +5,8 @@ import { MenusProvider } from "./providers/menus.provider";
 import { MenusService } from "./services/menus.service";
 import { MenuItemCategoriesController } from "./controllers/menu-item-categories.controller";
 import { MenuItemCategoriesService } from "./services/menu-item-categories.service";
+import { MenuItemsController } from "./controllers/menu-item.controller";
+import { MenuItemsService } from "./services/menu-item.service";
 
 @Module({
   imports: [
@@ -13,8 +15,8 @@ import { MenuItemCategoriesService } from "./services/menu-item-categories.servi
       signOptions: { expiresIn: "24h" },
     }),
   ],
-  controllers: [MenusController, MenuItemCategoriesController],
-  providers: [...MenusProvider, MenusService, MenuItemCategoriesService],
-  exports: [...MenusProvider, MenusService, MenuItemCategoriesService],
+  controllers: [MenusController, MenuItemsController, MenuItemCategoriesController],
+  providers: [...MenusProvider, MenusService, MenuItemsService, MenuItemCategoriesService],
+  exports: [...MenusProvider, MenusService, MenuItemsService, MenuItemCategoriesService],
 })
 export class MenusModule {}

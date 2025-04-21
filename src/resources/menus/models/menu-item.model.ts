@@ -39,7 +39,7 @@ export class MenuItems extends Model {
         type: DataType.BOOLEAN,
         defaultValue: false
     })
-    is_deleted: boolean
+    is_active: boolean
 
     @ForeignKey(() => MenuItemCategory)
     @Column({

@@ -36,9 +36,14 @@ export enum errors {
   // Menu related errors
   MENU_DOES_NOT_EXISTS = "This Menu does not exists.",
   MENU_ACCES_DENIED = "You do not have access to this Menu.",
+  MENU_NOT_SELECTED = "Please select a menu.",
 
   // Menu Categories related errors
   MENU_ITEM_CATEGORY_DOES_NOT_EXISTS = "This Menu Item Category does not exists.",
   MENU_ITEM_CATEGORY_ACCES_DENIED = "You do not have access to this Menu Item Category.",
+
+  // Menu related errors
+  MENU_ITEM_DOES_NOT_EXISTS = "This Menu Item does not exists.",
+  MENU_ITEM_ACCES_DENIED = "You do not have access to this Menu Item.",
   
 }

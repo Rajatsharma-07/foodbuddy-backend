@@ -15,7 +15,10 @@ import {
   RestaurantUpdateInterface,
 } from "../interfaces/restaurants.interface";
 import { Role } from "src/resources/roles/models/role.model";
-import { RestaurantCreateDto } from "../dtos/restaurants.dto";
+import {
+  RestaurantCreateDto,
+  RestaurantUpdateDto,
+} from "../dtos/restaurants.dto";
 
 @Injectable()
 export class RestaurantsService {
@@ -108,7 +111,7 @@ export class RestaurantsService {
   async update(
     user: Partial<User> & { role: string },
     id: number,
-    data: RestaurantCreateDto
+    data: RestaurantUpdateDto
   ): Promise<RestaurantUpdateInterface> {
     try {
       if (!((await is_superuser(user)) || is_admin(user))) {
