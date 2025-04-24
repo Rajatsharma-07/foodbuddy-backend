@@ -64,7 +64,7 @@ export class UsersService {
       if (!user.is_superuser) {
         filter["where"] = {
           restaurant_id: user.restaurant_id,
-          is_deleted: false,
+          is_active: true,
         };
       }
       const users = await User.findAll(filter);
@@ -82,7 +82,7 @@ export class UsersService {
     id: number
   ): Promise<UserRetrieveInterface> {
     try {
-      const where_clause = { id, is_deleted: false };
+      const where_clause = { id, is_active: true };
       const requested_user = await User.findOne({
         where: where_clause,
         attributes: { exclude: ["password"] },
@@ -186,7 +186,7 @@ export class UsersService {
   ): Promise<UserDeleteInterface> {
     try {
       const curr_data = await User.findOne({
-        where: { id, is_deleted: false },
+        where: { id, is_active: true },
       });
       if (!curr_data) {
         throw new BadRequestException(errors.USER_DOES_NOT_EXISTS);
@@ -282,7 +282,7 @@ export class UsersService {
     admin_panel?: boolean
   ): Promise<User | null> {
     try {
-      let where_clause = { email, is_superuser: false, is_deleted: false };
+      let where_clause = { email, is_superuser: false, is_active: true };
       if (admin_panel) {
         where_clause["is_superuser"] = true;
       }

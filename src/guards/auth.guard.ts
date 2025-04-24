@@ -53,7 +53,7 @@ export class AuthGuard implements CanActivate {
       return true;
     } catch (error) {
       if (error instanceof ForbiddenException) {
-        throw error; // Allow ForbiddenException to propagate as ACCESS_DENIED
+        throw error;
       }
       throw new UnauthorizedException(errors.INVALID_OR_EXPIRED_TOKEN);
     }
