@@ -10,6 +10,7 @@ export enum errors {
   INVALID_USER_ID = "Invalid user ID",
   EMAIL_IS_REQUIRED = "Email is required",
   USER_DOES_NOT_EXISTS = "This user does not exists.",
+  USER_ALREADY_DELETED = "This user has been already deleted.",
   RESTAURANT_ID_IS_REQUIRED = "Restaurant Id is required.",
   SUPERUSER_CREATION_IS_NOT_ALLOWED = "You can create a super user.",
   EMAIL_UPDATE_IS_NOT_ALLOWED = "You cannot update a user's email.",
@@ -45,5 +46,4 @@ export enum errors {
   // Menu related errors
   MENU_ITEM_DOES_NOT_EXISTS = "This Menu Item does not exists.",
   MENU_ITEM_ACCES_DENIED = "You do not have access to this Menu Item.",
-  
 }

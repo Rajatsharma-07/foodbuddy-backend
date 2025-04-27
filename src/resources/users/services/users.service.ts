@@ -6,7 +6,12 @@ import {
   BadRequestException,
 } from "@nestjs/common";
 import { User } from "../models/user.model";
-import { UserCreateDto, UserLoginDto, UserUpdateDto } from "../dtos/users.dto";
+import {
+  UserCreateDto,
+  UserFetchAllQueryDto,
+  UserLoginDto,
+  UserUpdateDto,
+} from "../dtos/users.dto";
 import {
   UserCreateInterface,
   UserDeleteInterface,
@@ -21,6 +26,7 @@ import { JwtService } from "@nestjs/jwt";
 import { Role } from "src/resources/roles/models/role.model";
 import { Restaurant } from "src/resources/restaurants/models/restaurant.model";
 import { is_superuser, is_admin } from "src/common/permission";
+import { Op } from "sequelize";
 
 @Injectable()
 export class UsersService {
@@ -51,26 +57,101 @@ export class UsersService {
   }
 
   async fetch_all(
-    user: Partial<User> & { role: string }
+    user: Partial<User> & {
+      role: string;
+      restaurant_id?: number;
+      is_superuser?: boolean;
+    },
+    query: UserFetchAllQueryDto
   ): Promise<UserFetchAllInterface> {
     try {
-      if (!((await is_superuser(user)) || (await is_admin(user)))) {
+      const hasAccess = (await is_superuser(user)) || (await is_admin(user));
+      if (!hasAccess) {
         throw new ForbiddenException(errors.ACCESS_DENIED);
       }
-      let filter = {
-        attributes: { exclude: ["password"] },
-      };
 
-      if (!user.is_superuser) {
-        filter["where"] = {
-          restaurant_id: user.restaurant_id,
-          is_active: true,
-        };
+      const {
+        page = 1,
+        limit,
+        offset,
+        sort_field,
+        sort_order = "asc",
+        id,
+        first_name,
+        last_name,
+        email,
+      } = query;
+
+      // Pagination: Default to limit of 10 and offset of 0 if not provided
+      const pagination_options = limit
+        ? {
+            limit,
+            offset: offset ?? (page - 1) * limit,
+          }
+        : { limit: 10, offset: 0 };
+
+      // Sorting
+      const order_options: any[] = [];
+      switch (sort_field) {
+        case "role":
+          order_options.push([{ model: Role, as: "role" }, "name", sort_order]);
+          break;
+        case "restaurant":
+          order_options.push([
+            { model: Restaurant, as: "restaurant" },
+            "name",
+            sort_order,
+          ]);
+          break;
+        case undefined:
+          order_options.push(["createdAt", sort_order]);
+          break;
+        default:
+          order_options.push([sort_field, sort_order]);
+          break;
       }
-      const users = await User.findAll(filter);
+
+      // Where clause
+      const where_clause: any = {};
+      if (!user.is_superuser) {
+        where_clause.restaurant_id = user.restaurant_id; // Only non-superusers need this filter
+        where_clause.is_active = true; // Only non-superusers need to be active
+      }
+      // Superuser bypasses this condition to see all users
+
+      // Adding search filters to the where clause
+      if (id) where_clause.id = id;
+      if (first_name)
+        where_clause.first_name = { [Op.iLike]: `%${first_name}%` };
+      if (last_name) where_clause.last_name = { [Op.iLike]: `%${last_name}%` };
+      if (email) where_clause.email = { [Op.iLike]: `%${email}%` };
+
+      // Find users with the specified filters and pagination
+      const users = await User.findAndCountAll({
+        where: where_clause,
+        attributes: { exclude: ["password"] },
+        include: [
+          {
+            model: Role,
+            as: "role",
+            attributes: ["id", "name"],
+          },
+          {
+            model: Restaurant,
+            as: "restaurant",
+            attributes: ["id", "name"],
+          },
+        ],
+        order: order_options,
+        ...pagination_options,
+      });
+
       return {
         success: true,
-        data: users,
+        data: users.rows,
+        total: users.count,
+        page,
+        limit: limit || users.count,
       };
     } catch (error) {
       throw error;
@@ -82,18 +163,24 @@ export class UsersService {
     id: number
   ): Promise<UserRetrieveInterface> {
     try {
-      const where_clause = { id, is_active: true };
+      const where_clause = { id };
+      if (!(await is_superuser(user))) {
+        where_clause["is_active"] = true;
+      }
       const requested_user = await User.findOne({
         where: where_clause,
         attributes: { exclude: ["password"] },
         include: [
           {
             model: Role,
-            attributes: ["name"],
+            as: "role",
+            attributes: ["id", "name"],
           },
           {
             model: Restaurant,
-            attributes: ["name"],
+            as: "restaurant",
+            attributes: ["id", "name"],
+            required: false,
           },
         ],
       });
@@ -186,10 +273,13 @@ export class UsersService {
   ): Promise<UserDeleteInterface> {
     try {
       const curr_data = await User.findOne({
-        where: { id, is_active: true },
+        where: { id },
       });
       if (!curr_data) {
         throw new BadRequestException(errors.USER_DOES_NOT_EXISTS);
+      }
+      if (!curr_data.is_active) {
+        throw new BadRequestException(errors.USER_ALREADY_DELETED);
       }
       if (!(await is_superuser(user))) {
         throw new ForbiddenException(errors.ACCESS_DENIED);
@@ -223,11 +313,7 @@ export class UsersService {
     data: UserCreateDto
   ): Promise<Boolean> {
     try {
-      if (user.is_superuser) {
-        if (!data?.restaurant_id) {
-          throw new BadRequestException(errors.RESTAURANT_ID_IS_REQUIRED);
-        }
-      } else {
+      if (!user.is_superuser) {
         if (data?.is_superuser) {
           throw new BadRequestException(
             errors.SUPERUSER_CREATION_IS_NOT_ALLOWED

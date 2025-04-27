@@ -61,7 +61,7 @@ export class User extends Model {
     allowNull: false,
   })
   declare role_id: number;
-  @BelongsTo(() => Role)
+  @BelongsTo(() => Role, { as: "role" })
   role: Role;
 
   @ForeignKey(() => Restaurant)
@@ -70,6 +70,6 @@ export class User extends Model {
     allowNull: true,
   })
   declare restaurant_id: number;
-  @BelongsTo(() => Restaurant)
+  @BelongsTo(() => Restaurant, { as: "restaurant" })
   restaurant: Restaurant;
 }

@@ -1,6 +1,30 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Request, UseGuards } from "@nestjs/common";
-import { UserCreateInterface, UserDeleteInterface, UserFetchAllInterface, UserLoginInterface, UserRetrieveInterface, UserUpdateInterface } from "../interfaces/users.interface";
-import { UserCreateDto, UserLoginDto, UserUpdateDto } from "../dtos/users.dto";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  Put,
+  Query,
+  Request,
+  UseGuards,
+} from "@nestjs/common";
+import {
+  UserCreateInterface,
+  UserDeleteInterface,
+  UserFetchAllInterface,
+  UserLoginInterface,
+  UserRetrieveInterface,
+  UserUpdateInterface,
+} from "../interfaces/users.interface";
+import {
+  UserCreateDto,
+  UserFetchAllQueryDto,
+  UserLoginDto,
+  UserUpdateDto,
+} from "../dtos/users.dto";
 import { UsersService } from "../services/users.service";
 import { DoesUserExists } from "src/guards/does-user-exists.guard";
 import { AuthGuard } from "src/guards/auth.guard";
@@ -11,7 +35,10 @@ export class UsersController {
 
   @Post("login")
   @UseGuards(DoesUserExists)
-  async login(@Request() req, @Body() data: UserLoginDto): Promise<UserLoginInterface> {
+  async login(
+    @Request() req,
+    @Body() data: UserLoginDto
+  ): Promise<UserLoginInterface> {
     try {
       const response = await this.userService.login(req.user);
       return response;
@@ -22,19 +49,25 @@ export class UsersController {
 
   @Get()
   @UseGuards(AuthGuard)
-  async fetch_all(@Request() req): Promise<UserFetchAllInterface> {
+  async fetch_all(
+    @Request() req,
+    @Query() query: UserFetchAllQueryDto
+  ): Promise<UserFetchAllInterface> {
     try {
       const user = req.user;
-      const response = await this.userService.fetch_all(user);
+      const response = await this.userService.fetch_all(user, query);
       return response;
     } catch (error) {
       throw error;
     }
   }
 
-  @Get(':id')
+  @Get(":id")
   @UseGuards(AuthGuard)
-  async retrieve(@Request() req, @Param('id', ParseIntPipe) id: number): Promise<UserRetrieveInterface> {
+  async retrieve(
+    @Request() req,
+    @Param("id", ParseIntPipe) id: number
+  ): Promise<UserRetrieveInterface> {
     try {
       const user = req.user;
       const response = await this.userService.retrieve(user, id);
@@ -44,9 +77,12 @@ export class UsersController {
     }
   }
 
-  @Post('')
+  @Post("")
   @UseGuards(AuthGuard)
-  async create(@Request() req, @Body() data: UserCreateDto): Promise<UserCreateInterface> {
+  async create(
+    @Request() req,
+    @Body() data: UserCreateDto
+  ): Promise<UserCreateInterface> {
     try {
       const user = req.user;
       const response = await this.userService.create(user, data);
@@ -56,9 +92,13 @@ export class UsersController {
     }
   }
 
-  @Put(':id')
+  @Put(":id")
   @UseGuards(AuthGuard)
-  async update(@Request() req, @Param('id', ParseIntPipe) id: number, @Body() data: UserUpdateDto): Promise<UserUpdateInterface> {
+  async update(
+    @Request() req,
+    @Param("id", ParseIntPipe) id: number,
+    @Body() data: UserUpdateDto
+  ): Promise<UserUpdateInterface> {
     try {
       const user = req.user;
       const response = await this.userService.update(user, id, data);
@@ -68,9 +108,12 @@ export class UsersController {
     }
   }
 
-  @Delete(':id')
+  @Delete(":id")
   @UseGuards(AuthGuard)
-  async delete(@Request() req, @Param('id', ParseIntPipe) id: number): Promise<UserDeleteInterface> {
+  async delete(
+    @Request() req,
+    @Param("id", ParseIntPipe) id: number
+  ): Promise<UserDeleteInterface> {
     try {
       const user = req.user;
       const response = await this.userService.delete(user, id);

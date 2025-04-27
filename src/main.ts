@@ -11,13 +11,16 @@ async function bootstrap() {
       whitelist: true, // Removes unknown properties
       forbidNonWhitelisted: true, // Throws error for extra properties
       transform: true, // Transforms payload to match DTO type
+      transformOptions: {
+        enableImplicitConversion: true, // Allows automatic conversion based on TS type metadata (works well with @Transform)
+      },
     })
   );
   const PORT = process.env.PORT ?? 3000;
   await app.enableCors({
     origin: ["http://localhost:3000"],
     credentials: true,
-  })
+  });
   await app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
   });
