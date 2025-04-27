@@ -17,23 +17,77 @@ import {
 import { Role } from "src/resources/roles/models/role.model";
 import {
   RestaurantCreateDto,
+  RestaurantFetchAllQueryDto,
   RestaurantUpdateDto,
 } from "../dtos/restaurants.dto";
+import { Op } from "sequelize";
 
 @Injectable()
 export class RestaurantsService {
   async fetch_all(
-    user: Partial<User> & { role: string }
+    user: Partial<User> & { role: string },
+    query: RestaurantFetchAllQueryDto
   ): Promise<RestaurantFetchAllInterface> {
     try {
       if (!(await is_superuser(user))) {
         throw new ForbiddenException(errors.ACCESS_DENIED);
       }
 
-      const restaurants = await Restaurant.findAll();
+      const {
+        page = 1,
+        limit,
+        offset,
+        sort_field,
+        sort_order = "asc",
+        id,
+        name,
+        address,
+        city,
+        state,
+        country,
+        pincode,
+      } = query;
+
+      // Pagination: Default to limit of 10 and offset of 0 if not provided
+      const pagination_options = limit
+        ? {
+            limit,
+            offset: offset ?? (page - 1) * limit,
+          }
+        : { limit: 10, offset: 0 };
+
+      // Sorting
+      const order_options: any[] = [];
+      switch (sort_field) {
+        case undefined:
+          order_options.push(["createdAt", sort_order]);
+          break;
+        default:
+          order_options.push([sort_field, sort_order]);
+          break;
+      }
+      const where_clause: any = {};
+
+      // Adding search filters to the where clause
+      if (id) where_clause.id = id;
+      if (name) where_clause.name = { [Op.iLike]: `%${name}%` };
+      if (address) where_clause.address = { [Op.iLike]: `%${address}%` };
+      if (city) where_clause.city = { [Op.iLike]: `%${city}%` };
+      if (state) where_clause.state = { [Op.iLike]: `%${state}%` };
+      if (country) where_clause.country = { [Op.iLike]: `%${country}%` };
+      if (pincode) where_clause.pincode = { [Op.iLike]: `%${pincode}%` };
+
+      const restaurants = await Restaurant.findAndCountAll({
+        where: where_clause,
+        order: order_options,
+        ...pagination_options,
+      });
       return {
         success: true,
-        data: restaurants,
+        data: restaurants.rows,
+        total: restaurants.count,
+        page,
+        limit: limit || restaurants.count,
       };
     } catch (error) {
       throw error;
@@ -50,31 +104,14 @@ export class RestaurantsService {
       }
       const where_clause = {
         id,
-        is_active: true,
-        is_deleted: false,
       };
+
+      if (!(await is_superuser(user))) {
+        where_clause["active"] = true;
+      }
+
       const restaurant = await Restaurant.findOne({
         where: where_clause,
-        include: [
-          {
-            model: User,
-            where: { is_active: true },
-            attributes: [
-              "id",
-              "first_name",
-              "last_name",
-              "email",
-              "role_id",
-              "is_active",
-            ],
-            include: [
-              {
-                model: Role,
-                attributes: ["name"],
-              },
-            ],
-          },
-        ],
       });
 
       if (!restaurant) {

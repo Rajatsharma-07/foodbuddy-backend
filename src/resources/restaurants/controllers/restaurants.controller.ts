@@ -7,6 +7,7 @@ import {
   ParseIntPipe,
   Post,
   Put,
+  Query,
   Request,
   UseGuards,
 } from "@nestjs/common";
@@ -19,7 +20,7 @@ import {
   RestaurantRetrieveInterface,
   RestaurantUpdateInterface,
 } from "../interfaces/restaurants.interface";
-import { RestaurantCreateDto } from "../dtos/restaurants.dto";
+import { RestaurantCreateDto, RestaurantFetchAllQueryDto } from "../dtos/restaurants.dto";
 
 @Controller("restaurants")
 export class RestaurantsController {
@@ -27,10 +28,10 @@ export class RestaurantsController {
 
   @Get()
   @UseGuards(AuthGuard)
-  async fetch_all(@Request() req): Promise<RestaurantFetchAllInterface> {
+  async fetch_all(@Request() req, @Query() query: RestaurantFetchAllQueryDto): Promise<RestaurantFetchAllInterface> {
     try {
       const user = req.user;
-      const response = await this.restaurantService.fetch_all(user);
+      const response = await this.restaurantService.fetch_all(user, query);
       return response;
     } catch (error) {
       throw error;

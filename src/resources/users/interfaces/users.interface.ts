@@ -7,25 +7,28 @@ export interface UserLoginInterface {
 
 export interface UserFetchAllInterface {
   success: boolean;
-  data: User[]
+  data: User[];
+  total: number;
+  page: number;
+  limit: number;
 }
 
 export interface UserRetrieveInterface {
   success: boolean;
-  data: User
+  data: User;
 }
 
 export interface UserCreateInterface {
   success: boolean;
-  data: User
+  data: User;
 }
 
 export interface UserUpdateInterface {
   success: boolean;
-  data: [number]
+  data: [number];
 }
 
 export interface UserDeleteInterface {
   success: boolean;
-  data: [number]
+  data: [number];
 }
