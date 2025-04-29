@@ -13,6 +13,7 @@ import {
   UserUpdateDto,
 } from "../dtos/users.dto";
 import {
+  SendOtpInterface,
   UserCreateInterface,
   UserDeleteInterface,
   UserFetchAllInterface,
@@ -27,6 +28,8 @@ import { Role } from "src/resources/roles/models/role.model";
 import { Restaurant } from "src/resources/restaurants/models/restaurant.model";
 import { is_superuser, is_admin } from "src/common/permission";
 import { Op } from "sequelize";
+import { OTP_TYPE } from "src/constants/constants";
+import { Otp } from "../models/otp.model";
 
 @Injectable()
 export class UsersService {
@@ -34,10 +37,42 @@ export class UsersService {
 
   async validate_user(data: UserLoginDto): Promise<User | null> {
     try {
-      const user = await this.validate_user_email(data.email, data?.admin);
+      const user = await this.validate_user_phonenumber(
+        data.phonenumber,
+        data?.admin
+      );
       if (!user) return null;
-      await this.validate_password(data.password, user?.password);
       return user;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async send_otp(
+    phonenumber: number,
+    is_admin: boolean
+  ): Promise<SendOtpInterface> {
+    try {
+      if (!phonenumber) {
+        throw new BadRequestException(errors.PHONE_NUMBER_IS_REQUIRED);
+      }
+
+      const user = await User.findOne({
+        where: { phonenumber, is_superuser: is_admin },
+      });
+      if (!user) {
+        throw new BadRequestException(errors.PHONE_NUMBER_NOT_REGISTERED);
+      }
+
+      const otp = await this.generateOtp(user.id, OTP_TYPE.LOGIN);
+
+      // Send the OTP via SMS service
+      await this.sendOtpToPhone(phonenumber, otp.otp_code);
+
+      return {
+        success: true,
+        data: "Otp Sent on your registered phone number.",
+      };
     } catch (error) {
       throw error;
     }
@@ -363,6 +398,35 @@ export class UsersService {
     return false;
   }
 
+  async validate_user_phonenumber(
+    phonenumber: number,
+    admin_panel?: boolean
+  ): Promise<User | null> {
+    try {
+      let where_clause = { phonenumber, is_superuser: false };
+      if (admin_panel) {
+        where_clause["is_superuser"] = true;
+      }
+      const user = await User.findOne({
+        where: where_clause,
+        include: [
+          { model: Role, attributes: ["name"] },
+          { model: Restaurant, attributes: ["name"] },
+        ],
+      });
+
+      if (!user) {
+        throw new UnauthorizedException(errors.INCORRECT_PHONE_NUMBER);
+      }
+      if (!user.is_active) {
+        throw new UnauthorizedException(errors.ACCOUNT_IS_DEACTIVATED);
+      }
+      return user;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async validate_user_email(
     email: string,
     admin_panel?: boolean
@@ -407,6 +471,53 @@ export class UsersService {
     }
   }
 
+  async validate_user_by_otp(
+    phonenumber: string,
+    otp_code: string
+  ): Promise<User | null> {
+    try {
+      const user = await this.validate_user_phone(phonenumber);
+
+      if (!user) throw new UnauthorizedException(errors.INCORRECT_PHONE_NUMBER);
+
+      if (!user.is_active)
+        throw new UnauthorizedException(errors.ACCOUNT_IS_DEACTIVATED);
+
+      const otpValid = await this.validate_otp(user.id, otp_code);
+      if (!otpValid) return null;
+
+      return user;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async validate_otp(user_id: number, otp_code: string): Promise<boolean> {
+    try {
+      const otp = await Otp.findOne({
+        where: { user_id, otp_code, is_active: true, otp_type: OTP_TYPE.LOGIN },
+      });
+      if (!otp) {
+        throw new UnauthorizedException(errors.INCORRECT_OTP);
+      }
+      await Otp.update({ is_active: false }, { where: { id: otp.id } });
+      return true;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async validate_user_phone(phonenumber: string): Promise<User | null> {
+    // Find the user by phone number (update your model if necessary)
+    return await User.findOne({
+      where: { phonenumber },
+      include: [
+        { model: Role, attributes: ["id", "name"] },
+        { model: Restaurant, attributes: ["id", "name"] },
+      ],
+    });
+  }
+
   async generate_jwt_token(user: Partial<User>): Promise<string> {
     try {
       const payload = {
@@ -418,5 +529,30 @@ export class UsersService {
     } catch (error) {
       throw new InternalServerErrorException();
     }
+  }
+
+  private async generateOtp(user_id: number, otp_type: string): Promise<Otp> {
+    try {
+      await Otp.update(
+        { is_active: false },
+        { where: { user_id, otp_type, is_active: true } }
+      );
+      const otp_code = Math.floor(100000 + Math.random() * 900000).toString();
+      const otp = await Otp.create({
+        otp_code: otp_code,
+        otp_type: otp_type,
+        user_id,
+      });
+      return otp;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  private async sendOtpToPhone(phoneNumber: number, otp: string) {
+    // Here you can integrate Twilio/Firebase or any SMS provider
+    console.log(
+      `Sending OTP ${otp} to phone number ${phoneNumber} - TODO: Connect to SMS Service`
+    );
   }
 }

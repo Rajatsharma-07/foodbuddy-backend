@@ -12,6 +12,7 @@ import {
   UseGuards,
 } from "@nestjs/common";
 import {
+  SendOtpInterface,
   UserCreateInterface,
   UserDeleteInterface,
   UserFetchAllInterface,
@@ -32,6 +33,16 @@ import { AuthGuard } from "src/guards/auth.guard";
 @Controller("users")
 export class UsersController {
   constructor(private readonly userService: UsersService) {}
+
+  @Post("send-otp")
+  async sendOtp(@Body() body: { phonenumber: number, is_admin: boolean }): Promise<SendOtpInterface> {
+    try {
+      const response = await this.userService.send_otp(body.phonenumber, body.is_admin);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  }
 
   @Post("login")
   @UseGuards(DoesUserExists)

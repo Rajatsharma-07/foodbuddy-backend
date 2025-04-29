@@ -9,11 +9,12 @@ import {
 } from "class-validator";
 
 export class UserLoginDto {
-  @IsString()
-  email: string;
 
-  @IsString()
-  password: string;
+  @IsNumber()
+  phonenumber: number;
+
+  @IsNumber()
+  otp_code: number;
 
   @IsBoolean()
   remember: boolean;
@@ -35,6 +36,9 @@ export class UserCreateDto {
 
   @IsNumber()
   role_id: number;
+
+  @IsNumber()
+  phonenumber: number;
 
   @IsOptional()
   @IsNumber()
@@ -70,6 +74,10 @@ export class UserUpdateDto {
   @IsOptional()
   @IsNumber()
   role_id: number;
+
+  @IsOptional()
+  @IsNumber()
+  phonenumber: number;
 
   @IsOptional()
   @IsNumber()
