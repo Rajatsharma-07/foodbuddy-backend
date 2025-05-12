@@ -29,6 +29,7 @@ export class RestaurantsService {
     query: RestaurantFetchAllQueryDto
   ): Promise<RestaurantFetchAllInterface> {
     try {
+
       if (!(await is_superuser(user))) {
         throw new ForbiddenException(errors.ACCESS_DENIED);
       }
@@ -70,7 +71,8 @@ export class RestaurantsService {
 
       // Adding search filters to the where clause
       if (id) where_clause.id = id;
-      if (name) where_clause.name = { [Op.iLike]: `%${name}%` };
+      if (name)
+        where_clause.name = { [Op.iLike]: `%${name}%` };
       if (address) where_clause.address = { [Op.iLike]: `%${address}%` };
       if (city) where_clause.city = { [Op.iLike]: `%${city}%` };
       if (state) where_clause.state = { [Op.iLike]: `%${state}%` };
@@ -106,12 +108,31 @@ export class RestaurantsService {
         id,
       };
 
-      if (!(await is_superuser(user))) {
-        where_clause["active"] = true;
+      if(!await is_superuser(user)){
+        where_clause['active'] = true;
       }
 
       const restaurant = await Restaurant.findOne({
         where: where_clause,
+        include: [
+          {
+            model: User,
+            attributes: [
+              "id",
+              "first_name",
+              "last_name",
+              "email",
+              "role_id",
+              "is_active",
+            ],
+            include: [
+              {
+                model: Role,
+                attributes: ["name"],
+              },
+            ],
+          },
+        ],
       });
 
       if (!restaurant) {

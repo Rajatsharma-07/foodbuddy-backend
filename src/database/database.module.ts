@@ -15,6 +15,8 @@ import { Order } from '../resources/orders/models/order.model';
 import { OrderItem } from '../resources/orders/models/order-item.model';
 import { Payment } from '../resources/payments/models/payment.model';
 import { Invoice } from '../resources/invoices/models/invoice.model';
+import { Otp } from 'src/resources/users/models/otp.model';
+import { MenuItemJunction } from 'src/resources/menus/models/menu-item-junction.model';
 
 @Module({
   imports: [
@@ -76,12 +78,14 @@ import { Invoice } from '../resources/invoices/models/invoice.model';
       Menu,
       MenuItemCategory,
       MenuItems,
+      MenuItemJunction,
       TableCategory,
       Tables,
       Order,
       OrderItem,
       Payment,
-      Invoice
+      Invoice,
+      Otp
     ]),
   ],
 })

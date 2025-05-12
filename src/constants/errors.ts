@@ -5,10 +5,15 @@ export enum errors {
   INVALID_OR_EXPIRED_TOKEN = "Invalid or Expired Token.",
   ACCOUNT_IS_DEACTIVATED = "Your account is deactivated, contact your administrator.",
   INCORRECT_EMAIL_OR_PASSWORD = "You have entered incorrect username or password.",
+  INCORRECT_PHONE_NUMBER = "You have entered incorrect phone number.",
+  INCORRECT_OTP = "You have entered incorrect OTP.",
+  PHONE_NUMBER_NOT_REGISTERED = "This phone number is not registered. Please contact your administrator to register this phone number.",
+  PHONE_NUMBER_OR_OTP_IS_MISSING = "Phone number or OTP is missing.",
 
   // User related Errors
   INVALID_USER_ID = "Invalid user ID",
   EMAIL_IS_REQUIRED = "Email is required",
+  PHONE_NUMBER_IS_REQUIRED = "Phone Number is required",
   USER_DOES_NOT_EXISTS = "This user does not exists.",
   USER_ALREADY_DELETED = "This user has been already deleted.",
   RESTAURANT_ID_IS_REQUIRED = "Restaurant Id is required.",

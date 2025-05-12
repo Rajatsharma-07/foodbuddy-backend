@@ -7,6 +7,8 @@ import { MenuItemCategoriesController } from "./controllers/menu-item-categories
 import { MenuItemCategoriesService } from "./services/menu-item-categories.service";
 import { MenuItemsController } from "./controllers/menu-item.controller";
 import { MenuItemsService } from "./services/menu-item.service";
+import { MenuItemJunctionController } from "./controllers/menu-item-junction.controller";
+import { MenuItemJunctionService } from "./services/menu-item-junction.service";
 
 @Module({
   imports: [
@@ -15,8 +17,8 @@ import { MenuItemsService } from "./services/menu-item.service";
       signOptions: { expiresIn: "24h" },
     }),
   ],
-  controllers: [MenusController, MenuItemsController, MenuItemCategoriesController],
-  providers: [...MenusProvider, MenusService, MenuItemsService, MenuItemCategoriesService],
-  exports: [...MenusProvider, MenusService, MenuItemsService, MenuItemCategoriesService],
+  controllers: [MenusController, MenuItemsController, MenuItemCategoriesController, MenuItemJunctionController],
+  providers: [...MenusProvider, MenusService, MenuItemsService, MenuItemCategoriesService, MenuItemJunctionService],
+  exports: [...MenusProvider, MenusService, MenuItemsService, MenuItemCategoriesService, MenuItemJunctionService],
 })
 export class MenusModule {}

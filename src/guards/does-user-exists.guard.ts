@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   CanActivate,
   ExecutionContext,
   Injectable,
@@ -15,16 +16,16 @@ export class DoesUserExists implements CanActivate {
       const request = context.switchToHttp().getRequest();
       const body = request.body;
 
-      if (!body.email) {
-        throw new UnauthorizedException(errors.EMAIL_IS_REQUIRED);
+      if (!body.phonenumber || !body.otp_code) {
+        throw new BadRequestException(errors.PHONE_NUMBER_OR_OTP_IS_MISSING);
       }
 
-      const user = await this.userService.validate_user(
-        body.admin ? { ...body, admin: true } : body
+      const user = await this.userService.validate_user_by_otp(
+        body.phonenumber,
+        body.otp_code
       );
-
       if (!user) {
-        throw new UnauthorizedException(errors.INCORRECT_EMAIL_OR_PASSWORD);
+        throw new UnauthorizedException(errors.INCORRECT_OTP);
       }
 
       request.user = user;

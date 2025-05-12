@@ -17,4 +17,8 @@ export enum TABLE_STATUS {
   PAYMENT_RECEIVED = "payment_received",
 }
 
+export enum OTP_TYPE {
+  LOGIN = "login",
+}
+
 export const BCRYPT_ROUNDS = 10;

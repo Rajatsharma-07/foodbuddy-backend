@@ -3,6 +3,9 @@ import { MenuItemCategory } from "../models/menu-item-category.model";
 export interface MenuItemCategoryFetchAllInterface {
   success: boolean;
   data: MenuItemCategory[];
+  total: number;
+  page: number;
+  limit: number;
 }
 
 export interface MenuItemCategoryRetrieveInterface {

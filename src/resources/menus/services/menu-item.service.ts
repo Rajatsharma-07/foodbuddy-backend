@@ -3,33 +3,20 @@ import {
   ForbiddenException,
   Injectable,
 } from "@nestjs/common";
+import { Op } from "sequelize";
 import { is_superuser } from "src/common/permission";
 import { errors } from "src/constants/errors";
+import { Restaurant } from "src/resources/restaurants/models/restaurant.model";
 import { User } from "src/resources/users/models/user.model";
-import { Menu } from "../models/menu.model";
-import {
-  MenuCreateInterface,
-  MenuDeleteInterface,
-  MenuFetchAllInterface,
-  MenuRetrieveInterface,
-  MenuUpdateInterface,
-} from "../interfaces/menus.interface";
-import {
-  MenuCreateDto,
-  MenuFetchAllQueryDto,
-  MenuUpdateDto,
-} from "../dtos/menus.dto";
-import {
-  MenuItemCreateDto,
-  MenuItemFetchAllQueryDto,
-  MenuItemUpdateDto,
-} from "../dtos/menu-item.dto";
+import { MenuItemFetchAllQueryDto } from "../dtos/menu-item.dto";
 import {
   MenuItemCreateInterface,
   MenuItemFetchAllInterface,
   MenuItemRetrieveInterface,
   MenuItemUpdateInterface,
 } from "../interfaces/menu-item.interface";
+import { MenuDeleteInterface } from "../interfaces/menus.interface";
+import { MenuItemCategory } from "../models/menu-item-category.model";
 import { MenuItems } from "../models/menu-item.model";
 
 @Injectable()
@@ -39,41 +26,65 @@ export class MenuItemsService {
     query: MenuItemFetchAllQueryDto
   ): Promise<MenuItemFetchAllInterface> {
     try {
-      const menu = await Menu.findOne({ where: { menu_id: query?.menu_id } });
+      // const menu = await Menu.findOne({ where: { menu_id: query?.menu_id } });
 
-      if (!menu) {
-        throw new ForbiddenException(errors.MENU_DOES_NOT_EXISTS);
+      // if (!menu) {
+      //   throw new ForbiddenException(errors.MENU_DOES_NOT_EXISTS);
+      // }
+
+      if (!(await is_superuser(user)) && !user?.restaurant_id) {
+        throw new ForbiddenException(errors.RESTAURANT_NOT_SELECTED);
       }
 
-      if (!((await is_superuser(user)) && !query?.menu_id)) {
-        throw new ForbiddenException(errors.MENU_NOT_SELECTED);
+      // if (
+      //   !(
+      //     (await is_superuser(user)) &&
+      //     user.restaurant_id !== menu?.restaurant_id
+      //   )
+      // ) {
+      //   throw new ForbiddenException(errors.MENU_ITEM_ACCES_DENIED);
+      // }
+
+      const { page = 1, limit, offset, category, not_in_array } = query;
+
+      // Pagination: Default to limit of 10 and offset of 0 if not provided
+      const pagination_options = limit
+        ? {
+            limit,
+            offset: offset ?? (page - 1) * limit,
+          }
+        : { limit: 10, offset: 0 };
+
+      const where_clause: any = {};
+      if (user?.restaurant_id)
+        where_clause["restaurant_id"] = user?.restaurant_id;
+
+      if (category) {
+        where_clause["category_id"] = category;
       }
 
-      if (
-        !(
-          (await is_superuser(user)) &&
-          user.restaurant_id !== menu?.restaurant_id
-        )
-      ) {
-        throw new ForbiddenException(errors.MENU_ITEM_ACCES_DENIED);
+      if (not_in_array?.length > 0) {
+        where_clause["id"] = { [Op.notIn]: not_in_array };
       }
 
-      let where_clause = {
-        is_active: true,
-      };
-
-      if (query?.menu_id) {
-        where_clause["menu_id"] = query?.menu_id;
-      }
-
-      if (query?.category_id) {
-        where_clause["category_id"] = query?.category_id;
-      }
-
-      const menu_items = await MenuItems.findAll({ where: where_clause });
+      const menu_items = await MenuItems.findAndCountAll({
+        where: where_clause,
+        include: [
+          {
+            model: MenuItemCategory,
+            attributes: ["id", "name"],
+          },
+          {
+            model: Restaurant,
+            attributes: ["id", "name"],
+          },
+        ],
+        ...pagination_options,
+      });
       return {
         success: true,
-        data: menu_items,
+        data: menu_items.rows,
+        total: menu_items.count,
       };
     } catch (error) {
       throw error;
@@ -86,18 +97,9 @@ export class MenuItemsService {
   ): Promise<MenuItemRetrieveInterface> {
     try {
       const menu_item = await MenuItems.findByPk(id);
-      const menu = await Menu.findByPk(menu_item?.menu_id);
 
       if (!menu_item) {
         throw new BadRequestException(errors.MENU_ITEM_DOES_NOT_EXISTS);
-      }
-
-      if (!menu) {
-        throw new BadRequestException(errors.MENU_DOES_NOT_EXISTS);
-      }
-
-      if (!is_superuser(user) && user.restaurant_id !== menu.restaurant_id) {
-        throw new ForbiddenException(errors.MENU_ACCES_DENIED);
       }
 
       return {
@@ -111,20 +113,19 @@ export class MenuItemsService {
 
   async create(
     user: Partial<User> & { role: string },
-    data: MenuItemCreateDto
+    data: any
   ): Promise<MenuItemCreateInterface> {
     try {
-      const menu = await Menu.findByPk(data.menu_id);
-
-      if (!menu) {
-        throw new BadRequestException(errors.MENU_DOES_NOT_EXISTS);
+      if (!(await is_superuser(user)) && !user?.restaurant_id) {
+        throw new ForbiddenException(errors.RESTAURANT_NOT_SELECTED);
       }
 
-      if (!is_superuser(user) && user.restaurant_id !== menu.restaurant_id) {
-        throw new ForbiddenException(errors.ACCESS_DENIED);
+      let new_data = data;
+      if (!(await is_superuser(user))) {
+        new_data["restaurant_id"] = user?.restaurant_id;
       }
-
-      const menu_item = await MenuItems.create({ ...data });
+      console.log(new_data);
+      const menu_item = await MenuItems.create({ ...new_data });
 
       return {
         success: true,
@@ -138,22 +139,24 @@ export class MenuItemsService {
   async update(
     user: Partial<User> & { role: string },
     id: number,
-    data: MenuItemUpdateDto
+    data: any
   ): Promise<MenuItemUpdateInterface> {
     try {
-      const menu = await Menu.findByPk(id);
-      const menu_item = await MenuItems.findByPk(id);
-
-      if (!menu) {
-        throw new BadRequestException(errors.MENU_DOES_NOT_EXISTS);
+      if (!(await is_superuser(user)) && !user?.restaurant_id) {
+        throw new ForbiddenException(errors.RESTAURANT_NOT_SELECTED);
       }
+
+      const menu_item = await MenuItems.findByPk(id);
 
       if (!menu_item) {
         throw new BadRequestException(errors.MENU_ITEM_DOES_NOT_EXISTS);
       }
 
-      if (!is_superuser(user) && user.restaurant_id !== menu.restaurant_id) {
-        throw new ForbiddenException(errors.MENU_ACCES_DENIED);
+      if (
+        !(await is_superuser(user)) &&
+        user.restaurant_id !== menu_item.restaurant_id
+      ) {
+        throw new ForbiddenException(errors.MENU_ITEM_ACCES_DENIED);
       }
 
       const updated_menu_item = await MenuItems.update(data, { where: { id } });
@@ -172,19 +175,21 @@ export class MenuItemsService {
     id: number
   ): Promise<MenuDeleteInterface> {
     try {
-      const menu = await Menu.findByPk(id);
-      const menu_item = await MenuItems.findByPk(id);
-
-      if (!menu) {
-        throw new BadRequestException(errors.MENU_DOES_NOT_EXISTS);
+      if (!(await is_superuser(user)) && !user?.restaurant_id) {
+        throw new ForbiddenException(errors.RESTAURANT_NOT_SELECTED);
       }
+
+      const menu_item = await MenuItems.findByPk(id);
 
       if (!menu_item) {
         throw new BadRequestException(errors.MENU_ITEM_DOES_NOT_EXISTS);
       }
 
-      if (!is_superuser(user) && user.restaurant_id !== menu.restaurant_id) {
-        throw new ForbiddenException(errors.MENU_ACCES_DENIED);
+      if (
+        !(await is_superuser(user)) &&
+        user.restaurant_id !== menu_item.restaurant_id
+      ) {
+        throw new ForbiddenException(errors.MENU_ITEM_ACCES_DENIED);
       }
 
       const deleted_menu_item = await MenuItems.destroy({ where: { id } });

@@ -38,6 +38,12 @@ export class User extends Model {
   declare email: string;
 
   @Column({
+    type: DataType.BIGINT,
+    unique: true,
+  })
+  declare phonenumber: number;
+
+  @Column({
     type: DataType.STRING,
     allowNull: true,
   })

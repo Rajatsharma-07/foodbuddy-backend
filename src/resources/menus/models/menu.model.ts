@@ -14,20 +14,20 @@ export class Menu extends Model {
         type: DataType.STRING,
         allowNull: false
     })
-    name: string
+    declare name: string
 
     @Column({
         type: DataType.BOOLEAN,
         defaultValue: false
     })
-    is_active: boolean
+    declare is_active: boolean
 
     @ForeignKey(() => Restaurant)
     @Column({
         type: DataType.INTEGER,
         allowNull: false
     })
-    restaurant_id: number
+    declare restaurant_id: number
     @BelongsTo(() => Restaurant)
-    restaurant: Restaurant
+    declare restaurant: Restaurant
 }
