@@ -17,45 +17,75 @@ import {
 import {
   MenuCreateDto,
   MenuFetchAllQueryDto,
+  MenuImportDto,
   MenuUpdateDto,
 } from "../dtos/menus.dto";
+import { Op } from "sequelize";
+import { MenuItemJunctionService } from "./menu-item-junction.service";
+import { Sequelize } from "sequelize-typescript";
 
 @Injectable()
 export class MenusService {
+  constructor(
+    private readonly MenuItemJunctionService: MenuItemJunctionService,
+    private readonly sequelize: Sequelize
+  ) {}
   async fetch_all(
     user: Partial<User> & { role: string },
     query: MenuFetchAllQueryDto
   ): Promise<MenuFetchAllInterface> {
     try {
-      if (!((await is_superuser(user)) && !query?.restaurant_id)) {
+      if (!(await is_superuser(user)) && !user?.restaurant_id) {
         throw new ForbiddenException(errors.RESTAURANT_NOT_SELECTED);
       }
 
-      if (
-        !(
-          (await is_superuser(user)) &&
-          user.restaurant_id !== query?.restaurant_id
-        )
-      ) {
-        throw new ForbiddenException(errors.MENU_ACCES_DENIED);
+      const {
+        page = 1,
+        limit,
+        offset,
+        sort_field,
+        sort_order = "asc",
+        id,
+        name,
+      } = query;
+
+      // Pagination: Default to limit of 10 and offset of 0 if not provided
+      const pagination_options = limit
+        ? {
+            limit,
+            offset: offset ?? (page - 1) * limit,
+          }
+        : { limit: 10, offset: 0 };
+
+      // Sorting
+      const order_options: any[] = [];
+      switch (sort_field) {
+        case undefined:
+          order_options.push(["createdAt", sort_order]);
+          break;
+        default:
+          order_options.push([sort_field, sort_order]);
+          break;
       }
+      const where_clause: any = {};
 
-      let where_clause = {
-        is_active: true,
-      };
+      if (user?.restaurant_id) where_clause.restaurant_id = user.restaurant_id;
 
-      if (query?.restaurant_id) {
-        where_clause["restaurant_id"] = query?.restaurant_id;
-      }
+      // Adding search filters to the where clause
+      if (id) where_clause.id = id;
+      if (name) where_clause.name = { [Op.iLike]: `%${name}%` };
 
-      if (query?.is_active) {
-        where_clause["is_active"] = query?.is_active;
-      }
-
-      const menus = await Menu.findAll({ where: where_clause });
+      const restaurants = await Menu.findAndCountAll({
+        where: where_clause,
+        order: order_options,
+        ...pagination_options,
+      });
       return {
         success: true,
-        data: menus,
+        data: restaurants.rows,
+        total: restaurants.count,
+        page,
+        limit: limit || restaurants.count,
       };
     } catch (error) {
       throw error;
@@ -73,7 +103,10 @@ export class MenusService {
         throw new BadRequestException(errors.MENU_DOES_NOT_EXISTS);
       }
 
-      if (!is_superuser(user) && user.restaurant_id !== menu.restaurant_id) {
+      if (
+        !(await is_superuser(user)) &&
+        user.restaurant_id !== menu.restaurant_id
+      ) {
         throw new ForbiddenException(errors.MENU_ACCES_DENIED);
       }
 
@@ -90,18 +123,54 @@ export class MenusService {
     user: Partial<User> & { role: string },
     data: MenuCreateDto
   ): Promise<MenuCreateInterface> {
+    const transaction = await this.sequelize.transaction();
     try {
-      if (!is_superuser(user) && user.restaurant_id !== data.restaurant_id) {
-        throw new ForbiddenException(errors.ACCESS_DENIED);
-      }
-
-      const menu = await Menu.create({ ...data });
-
+      const menu_data = data?.menu_data;
+      const menu_item_data = data?.menu_item_data;
+      const menu = await Menu.create(
+        { ...menu_data, restaurant_id: user?.restaurant_id },
+        { transaction }
+      );
+      const menu_item_junction = await this.MenuItemJunctionService.add_items(
+        user,
+        menu.id,
+        menu_item_data,
+        transaction
+      );
+      await transaction.commit();
       return {
         success: true,
         data: menu,
       };
     } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
+  }
+
+  async import_data(
+    user: Partial<User> & { role: string },
+    data: MenuImportDto
+  ): Promise<MenuCreateInterface> {
+    const transaction = await this.sequelize.transaction();
+    try {
+      const menu = await Menu.create(
+        { name: data?.name, restaurant_id: user?.restaurant_id },
+        { transaction }
+      );
+      const menu_item_junction = await this.MenuItemJunctionService.import_data(
+        user,
+        menu.id,
+        data?.menu_id,
+        transaction
+      );
+      await transaction.commit();
+      return {
+        success: true,
+        data: menu,
+      };
+    } catch (error) {
+      await transaction.rollback();
       throw error;
     }
   }
@@ -111,6 +180,7 @@ export class MenusService {
     id: number,
     data: MenuUpdateDto
   ): Promise<MenuUpdateInterface> {
+    const transaction = await this.sequelize.transaction();
     try {
       const menu = await Menu.findByPk(id);
 
@@ -118,17 +188,32 @@ export class MenusService {
         throw new BadRequestException(errors.MENU_DOES_NOT_EXISTS);
       }
 
-      if (!is_superuser(user) && user.restaurant_id !== menu.restaurant_id) {
+      if (
+        !(await is_superuser(user)) &&
+        user.restaurant_id !== menu.restaurant_id
+      ) {
         throw new ForbiddenException(errors.MENU_ACCES_DENIED);
       }
 
-      const updated_menu = await Menu.update(data, { where: { id } });
+      const updated_menu = await Menu.update(data?.menu_data, {
+        where: { id },
+        transaction,
+      });
+      await this.MenuItemJunctionService.add_items(
+        user,
+        id,
+        data?.menu_item_data,
+        transaction
+      );
+
+      await transaction.commit();
 
       return {
         success: true,
         data: updated_menu,
       };
     } catch (error) {
+      await transaction.rollback();
       throw error;
     }
   }
@@ -137,24 +222,31 @@ export class MenusService {
     user: Partial<User> & { role: string },
     id: number
   ): Promise<MenuDeleteInterface> {
+    const transaction = await this.sequelize.transaction();
     try {
-      const menu = await Menu.findByPk(id);
+      const menu = await Menu.findByPk(id, { transaction });
 
       if (!menu) {
         throw new BadRequestException(errors.MENU_DOES_NOT_EXISTS);
       }
 
-      if (!is_superuser(user) && user.restaurant_id !== menu.restaurant_id) {
+      if (
+        !(await is_superuser(user)) &&
+        user.restaurant_id !== menu.restaurant_id
+      ) {
         throw new ForbiddenException(errors.MENU_ACCES_DENIED);
       }
 
-      const deleted_menu = await Menu.destroy({ where: { id } });
+      await this.MenuItemJunctionService.delete_all_items(user, id, transaction);
 
+      const deleted_menu = await Menu.destroy({ where: { id }, transaction });
+      await transaction.commit();
       return {
         success: true,
         data: deleted_menu,
       };
     } catch (error) {
+      await transaction.rollback();
       throw error;
     }
   }

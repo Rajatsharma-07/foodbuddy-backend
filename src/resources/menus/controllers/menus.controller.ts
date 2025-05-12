@@ -12,9 +12,20 @@ import {
   UseGuards,
 } from "@nestjs/common";
 import { AuthGuard } from "src/guards/auth.guard";
-import { MenuCreateInterface, MenuDeleteInterface, MenuFetchAllInterface, MenuRetrieveInterface, MenuUpdateInterface } from "../interfaces/menus.interface";
+import {
+  MenuCreateDto,
+  MenuFetchAllQueryDto,
+  MenuImportDto,
+  MenuUpdateDto,
+} from "../dtos/menus.dto";
+import {
+  MenuCreateInterface,
+  MenuDeleteInterface,
+  MenuFetchAllInterface,
+  MenuRetrieveInterface,
+  MenuUpdateInterface,
+} from "../interfaces/menus.interface";
 import { MenusService } from "../services/menus.service";
-import { MenuCreateDto, MenuFetchAllQueryDto, MenuUpdateDto } from "../dtos/menus.dto";
 
 @Controller("menus")
 export class MenusController {
@@ -55,15 +66,30 @@ export class MenusController {
   async create(
     @Request() req,
     @Body() data: MenuCreateDto
-    ): Promise<MenuCreateInterface> {
-      try {
-        const user = req.user;
-        const response = await this.menuService.create(user, data);
-        return response;
-      } catch (error) {
-        throw error;
-      }
+  ): Promise<MenuCreateInterface> {
+    try {
+      const user = req.user;
+      const response = await this.menuService.create(user, data);
+      return response;
+    } catch (error) {
+      throw error;
     }
+  }
+
+  @Post("import")
+  @UseGuards(AuthGuard)
+  async import_data(
+    @Request() req,
+    @Body() data: MenuImportDto
+  ): Promise<MenuCreateInterface> {
+    try {
+      const user = req.user;
+      const response = await this.menuService.import_data(user, data);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  }
 
   @Put(":id")
   @UseGuards(AuthGuard)
@@ -80,7 +106,6 @@ export class MenusController {
       throw error;
     }
   }
-
 
   @Delete(":id")
   @UseGuards(AuthGuard)

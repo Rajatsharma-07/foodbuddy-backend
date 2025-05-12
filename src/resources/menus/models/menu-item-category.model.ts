@@ -14,14 +14,14 @@ export class MenuItemCategory extends Model {
         type: DataType.STRING,
         allowNull: false
     })
-    name: string
+    declare name: string
 
     @ForeignKey(() => Restaurant)
     @Column({
         type: DataType.INTEGER,
         allowNull: false
     })
-    restaurant_id: number
+    declare restaurant_id: number
     @BelongsTo(() => Restaurant)
-    restaurant: Restaurant
+    declare restaurant: Restaurant
 }

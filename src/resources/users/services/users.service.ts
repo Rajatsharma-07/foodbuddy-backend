@@ -80,7 +80,11 @@ export class UsersService {
 
   async login(user: User): Promise<UserLoginInterface> {
     try {
-      const { password, ...new_user } = user.get({ plain: true });
+      let { password, ...new_user } = user.get({ plain: true });
+      if (!user?.is_superuser) {
+        let { is_superuser, ...noraml_user } = new_user;
+        new_user = noraml_user;
+      }
       const token = await this.generate_jwt_token(new_user);
       return {
         success: true,

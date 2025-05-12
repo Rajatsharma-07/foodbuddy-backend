@@ -9,7 +9,9 @@ import {
   Put,
   Query,
   Request,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from "@nestjs/common";
 import { AuthGuard } from "src/guards/auth.guard";
 import { MenuItemsService } from "../services/menu-item.service";
@@ -25,6 +27,9 @@ import {
   MenuItemRetrieveInterface,
   MenuItemUpdateInterface,
 } from "../interfaces/menu-item.interface";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { diskStorage } from "multer";
+import * as fs from "fs";
 
 @Controller("menu-items")
 export class MenuItemsController {
@@ -62,12 +67,34 @@ export class MenuItemsController {
 
   @Post()
   @UseGuards(AuthGuard)
+  @UseInterceptors(
+    FileInterceptor("image", {
+      storage: diskStorage({
+        destination: (req, file, cb) => {
+          const uploadPath = "./uploads/menu-items";
+          if (!fs.existsSync(uploadPath)) {
+            fs.mkdirSync(uploadPath, { recursive: true });
+          }
+          cb(null, uploadPath);
+        },
+        filename: (req, file, cb) => {
+          const uniqueSuffix =
+            Date.now() + "-" + Math.round(Math.random() * 1e9);
+          cb(null, `${uniqueSuffix}-${file.originalname}`);
+        },
+      }),
+    })
+  )
   async create(
     @Request() req,
-    @Body() data: MenuItemCreateDto
+    @Body() data: any,
+    @UploadedFile() file?: Express.Multer.File
   ): Promise<MenuItemCreateInterface> {
     try {
       const user = req.user;
+      if (file) {
+        data.image_path = file.filename;
+      }
       const response = await this.menuItemService.create(user, data);
       return response;
     } catch (error) {
@@ -77,13 +104,38 @@ export class MenuItemsController {
 
   @Put(":id")
   @UseGuards(AuthGuard)
+  @UseInterceptors(
+    FileInterceptor("image", {
+      storage: diskStorage({
+        destination: (req, file, cb) => {
+          const uploadPath = "./uploads/menu-items";
+          if (!fs.existsSync(uploadPath)) {
+            fs.mkdirSync(uploadPath, { recursive: true });
+          }
+          cb(null, uploadPath);
+        },
+        filename: (req, file, cb) => {
+          const uniqueSuffix =
+            Date.now() + "-" + Math.round(Math.random() * 1e9);
+          cb(null, `${uniqueSuffix}-${file.originalname}`);
+        },
+      }),
+    })
+  )
   async update(
     @Request() req,
     @Param("id", ParseIntPipe) id: number,
-    @Body() data: MenuItemUpdateDto
+    @Body() data: any,
+    @UploadedFile() file?: Express.Multer.File
   ): Promise<MenuItemUpdateInterface> {
     try {
       const user = req.user;
+
+      // Add image_path to the DTO if a file was uploaded
+      if (file) {
+        data.image_path = file.filename;
+      }
+
       const response = await this.menuItemService.update(user, id, data);
       return response;
     } catch (error) {
