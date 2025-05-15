@@ -3,9 +3,9 @@ import {
   ForbiddenException,
   Injectable,
 } from "@nestjs/common";
-import { is_superuser } from "src/common/permission";
-import { errors } from "src/constants/errors";
-import { User } from "src/resources/users/models/user.model";
+import { is_superuser } from "../../../common/permission";
+import { errors } from "../../../constants/errors";
+import { User } from "../../../resources/users/models/user.model";
 import { Menu } from "../models/menu.model";
 import {
   MenuCreateInterface,

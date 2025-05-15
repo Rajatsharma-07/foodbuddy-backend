@@ -1,5 +1,5 @@
-import { ROLES } from "src/constants/constants";
-import { User } from "src/resources/users/models/user.model";
+import { ROLES } from "../constants/constants";
+import { User } from "../resources/users/models/user.model";
 
 export async function is_superuser(
   user: Partial<User> & { role: string }

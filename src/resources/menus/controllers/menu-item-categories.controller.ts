@@ -11,7 +11,7 @@ import {
   Request,
   UseGuards,
 } from "@nestjs/common";
-import { AuthGuard } from "src/guards/auth.guard";
+import { AuthGuard } from "../../../guards/auth.guard";
 import { MenuItemCategoriesService } from "../services/menu-item-categories.service";
 import {
   MenuItemCategoryCreateInterface,

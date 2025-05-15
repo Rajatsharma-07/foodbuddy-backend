@@ -6,9 +6,9 @@ import {
   UnauthorizedException,
 } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
-import { errors } from "src/constants/errors";
-import { Permission } from "src/resources/permissions/models/permission.model";
-import { RolePermission } from "src/resources/roles/models/role-permission.model";
+import { errors } from "../constants/errors";
+import { Permission } from "../resources/permissions/models/permission.model";
+import { RolePermission } from "../resources/roles/models/role-permission.model";
 
 @Injectable()
 export class AuthGuard implements CanActivate {

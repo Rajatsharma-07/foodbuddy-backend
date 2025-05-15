@@ -1,7 +1,12 @@
 import { ForbiddenException, Injectable } from "@nestjs/common";
-import { is_admin, is_superuser } from "src/common/permission";
-import { errors } from "src/constants/errors";
-import { User } from "src/resources/users/models/user.model";
+import { is_superuser } from "../../../common/permission";
+import { errors } from "../../../constants/errors";
+import { User } from "../../../resources/users/models/user.model";
+import {
+  TableCategoryCreateDto,
+  TableCategoryFetchAllQueryDto,
+  TableCategoryUpdateDto,
+} from "../dtos/table-categories.dto";
 import {
   TableCategoryCreateInterface,
   TableCategoryDeleteInterface,
@@ -10,11 +15,6 @@ import {
   TableCategoryUpdateInterface,
 } from "../interfaces/table-categories.interface";
 import { TableCategory } from "../models/table-category.model";
-import {
-  TableCategoryCreateDto,
-  TableCategoryFetchAllQueryDto,
-  TableCategoryUpdateDto,
-} from "../dtos/table-categories.dto";
 
 @Injectable()
 export class TableCategoriesService {

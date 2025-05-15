@@ -1,5 +1,5 @@
 import { Provider } from "@nestjs/common";
-import { TABLE_CATEGORY_REPOSITORY, TABLE_REPOSITORY } from "src/constants/repository-constants";
+import { TABLE_CATEGORY_REPOSITORY, TABLE_REPOSITORY } from "../../..//constants/repository-constants";
 import { Tables } from "../models/table.model";
 import { TableCategory } from "../models/table-category.model";
 

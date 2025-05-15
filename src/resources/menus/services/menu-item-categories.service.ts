@@ -4,10 +4,10 @@ import {
   Injectable,
 } from "@nestjs/common";
 import { Op } from "sequelize";
-import { is_superuser } from "src/common/permission";
-import { errors } from "src/constants/errors";
-import { Restaurant } from "src/resources/restaurants/models/restaurant.model";
-import { User } from "src/resources/users/models/user.model";
+import { is_superuser } from "../../../common/permission";
+import { errors } from "../../../constants/errors";
+import { Restaurant } from "../../../resources/restaurants/models/restaurant.model";
+import { User } from "../../../resources/users/models/user.model";
 import {
   MenuItemCategoryCreateDto,
   MenuItemCategoryFetchAllQueryDto,

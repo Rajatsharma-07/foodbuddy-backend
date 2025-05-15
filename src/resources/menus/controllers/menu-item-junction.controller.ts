@@ -9,7 +9,7 @@ import {
   Request,
   UseGuards,
 } from "@nestjs/common";
-import { AuthGuard } from "src/guards/auth.guard";
+import { AuthGuard } from "../../../guards/auth.guard";
 import { MenuItemJunctionAddInterface, MenuItemJunctionDeleteInterface, MenuItemJunctionFetchAllInterface } from "../interfaces/menu-item-junction.interface";
 import { MenuItemJunctionService } from "../services/menu-item-junction.service";
 import { MenuItemJunctionAddDto } from "../dtos/menu-item-junction.dto";

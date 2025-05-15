@@ -3,9 +3,9 @@ import {
   ForbiddenException,
   Injectable,
 } from "@nestjs/common";
-import { is_admin, is_superuser } from "src/common/permission";
-import { errors } from "src/constants/errors";
-import { User } from "src/resources/users/models/user.model";
+import { is_admin, is_superuser } from "../../../common/permission";
+import { errors } from "../../../constants/errors";
+import { User } from "../../../resources/users/models/user.model";
 import { Restaurant } from "../models/restaurant.model";
 import {
   RestaurantCreateInterface,
@@ -14,7 +14,7 @@ import {
   RestaurantRetrieveInterface,
   RestaurantUpdateInterface,
 } from "../interfaces/restaurants.interface";
-import { Role } from "src/resources/roles/models/role.model";
+import { Role } from "../../../resources/roles/models/role.model";
 import {
   RestaurantCreateDto,
   RestaurantFetchAllQueryDto,

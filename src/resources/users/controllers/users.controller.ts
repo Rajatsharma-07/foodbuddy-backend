@@ -27,8 +27,8 @@ import {
   UserUpdateDto,
 } from "../dtos/users.dto";
 import { UsersService } from "../services/users.service";
-import { DoesUserExists } from "src/guards/does-user-exists.guard";
-import { AuthGuard } from "src/guards/auth.guard";
+import { DoesUserExists } from "../../../guards/does-user-exists.guard";
+import { AuthGuard } from "../../../guards/auth.guard";
 
 @Controller("users")
 export class UsersController {

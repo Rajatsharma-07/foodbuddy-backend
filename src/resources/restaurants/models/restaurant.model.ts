@@ -6,7 +6,7 @@ import {
   Model,
   Table,
 } from "sequelize-typescript";
-import { User } from "src/resources/users/models/user.model";
+import { User } from "../../../resources/users/models/user.model";
 
 @Table({ tableName: "restaurants" })
 export class Restaurant extends Model {

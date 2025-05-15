@@ -1,5 +1,5 @@
 import { Provider } from "@nestjs/common";
-import { USER_REPOSITORY } from "src/constants/repository-constants";
+import { USER_REPOSITORY } from "../../../constants/repository-constants";
 import { User } from "../models/user.model";
 
 export const UsersProvider: Provider[] = [
