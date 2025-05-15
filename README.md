@@ -16,6 +16,10 @@
 
 - Create a new file .env and copy the content from env.sample into this file.
 
+- Run db seed command
+  ```bash
+  yarn run db:seed
+
 - Run your project
   ```bash
   yarn start:dev
