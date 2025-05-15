@@ -13,13 +13,11 @@ import {
   UseGuards,
   UseInterceptors,
 } from "@nestjs/common";
-import { AuthGuard } from "src/guards/auth.guard";
-import { MenuItemsService } from "../services/menu-item.service";
-import {
-  MenuItemCreateDto,
-  MenuItemFetchAllQueryDto,
-  MenuItemUpdateDto,
-} from "../dtos/menu-item.dto";
+import { FileInterceptor } from "@nestjs/platform-express";
+import * as fs from "fs";
+import { diskStorage } from "multer";
+import { AuthGuard } from "../../../guards/auth.guard";
+import { MenuItemFetchAllQueryDto } from "../dtos/menu-item.dto";
 import {
   MenuItemCreateInterface,
   MenuItemDeleteInterface,
@@ -27,9 +25,7 @@ import {
   MenuItemRetrieveInterface,
   MenuItemUpdateInterface,
 } from "../interfaces/menu-item.interface";
-import { FileInterceptor } from "@nestjs/platform-express";
-import { diskStorage } from "multer";
-import * as fs from "fs";
+import { MenuItemsService } from "../services/menu-item.service";
 
 @Controller("menu-items")
 export class MenuItemsController {

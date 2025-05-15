@@ -3,9 +3,14 @@ import {
   ForbiddenException,
   Injectable,
 } from "@nestjs/common";
-import { is_admin, is_superuser } from "src/common/permission";
-import { errors } from "src/constants/errors";
-import { User } from "src/resources/users/models/user.model";
+import { is_superuser } from "../../../common/permission";
+import { errors } from "../../../constants/errors";
+import { User } from "../../../resources/users/models/user.model";
+import {
+  TableCreateDto,
+  TableFetchAllQueryDto,
+  TableUpdateDto,
+} from "../dtos/tables.dto";
 import {
   TableCreateInterface,
   TableDeleteInterface,
@@ -14,7 +19,6 @@ import {
   TableUpdateInterface,
 } from "../interfaces/tables.interface";
 import { Tables } from "../models/table.model";
-import { TableCreateDto, TableFetchAllQueryDto, TableUpdateDto } from "../dtos/tables.dto";
 
 @Injectable()
 export class TablesService {
@@ -97,7 +101,7 @@ export class TablesService {
         throw new BadRequestException(errors.RESTAURANT_ACCESS_DENIED);
       }
 
-      const table = await Tables.create({...data});
+      const table = await Tables.create({ ...data });
       return {
         success: true,
         data: table,
@@ -119,7 +123,10 @@ export class TablesService {
         throw new ForbiddenException(errors.TABLE_DOES_NOT_EXISTS);
       }
 
-      if (!(await is_superuser(user)) && user.restaurant_id !== table.restaurant_id) {
+      if (
+        !(await is_superuser(user)) &&
+        user.restaurant_id !== table.restaurant_id
+      ) {
         throw new ForbiddenException(errors.TABLE_ACCES_DENIED);
       }
 
@@ -145,7 +152,10 @@ export class TablesService {
         throw new ForbiddenException(errors.TABLE_DOES_NOT_EXISTS);
       }
 
-      if (!(await is_superuser(user)) && user.restaurant_id !== table.restaurant_id) {
+      if (
+        !(await is_superuser(user)) &&
+        user.restaurant_id !== table.restaurant_id
+      ) {
         throw new ForbiddenException(errors.TABLE_ACCES_DENIED);
       }
 

@@ -4,9 +4,9 @@ import {
   Injectable,
 } from "@nestjs/common";
 import { Sequelize } from "sequelize-typescript";
-import { is_superuser } from "src/common/permission";
-import { errors } from "src/constants/errors";
-import { User } from "src/resources/users/models/user.model";
+import { is_superuser } from "../../../common/permission";
+import { errors } from "../../../constants/errors";
+import { User } from "../../../resources/users/models/user.model";
 import { MenuItemJunctionAddDto } from "../dtos/menu-item-junction.dto";
 import {
   MenuItemJunctionAddInterface,

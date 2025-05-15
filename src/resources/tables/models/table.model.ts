@@ -8,7 +8,7 @@ import {
 } from "sequelize-typescript";
 import { TableCategory } from "./table-category.model";
 import { Restaurant } from "../../../resources/restaurants/models/restaurant.model";
-import { TABLE_STATUS } from "src/constants/constants";
+import { TABLE_STATUS } from "../../../constants/constants";
 
 @Table({ tableName: "tables" })
 export class Tables extends Model {

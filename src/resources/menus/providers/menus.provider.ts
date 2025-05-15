@@ -1,5 +1,5 @@
 import { Provider } from "@nestjs/common";
-import { MENU_ITEM_CATEGORY_REPOSITORY, MENU_REPOSITORY, MENU_ITEM_REPOSITORY, MENU_ITEM_JUNCTION_REPOSITORY } from "src/constants/repository-constants";
+import { MENU_ITEM_CATEGORY_REPOSITORY, MENU_REPOSITORY, MENU_ITEM_REPOSITORY, MENU_ITEM_JUNCTION_REPOSITORY } from "../../../constants/repository-constants";
 import { Menu } from "../models/menu.model";
 import { MenuItemCategory } from "../models/menu-item-category.model";
 import { MenuItems } from "../models/menu-item.model";

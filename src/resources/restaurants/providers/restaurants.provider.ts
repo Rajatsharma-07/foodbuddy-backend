@@ -1,5 +1,5 @@
 import { Provider } from "@nestjs/common";
-import { RETAURANT_REPOSITORY } from "src/constants/repository-constants";
+import { RETAURANT_REPOSITORY } from "../../../constants/repository-constants";
 import { Restaurant } from "../models/restaurant.model";
 
 export const RestaurantsProvider: Provider[] = [

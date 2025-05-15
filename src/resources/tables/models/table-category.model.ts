@@ -1,6 +1,5 @@
-import { Model, Column, DataType, Table, ForeignKey, BelongsTo, AllowNull } from "sequelize-typescript";
-import { Restaurant } from "src/resources/restaurants/models/restaurant.model";
-import { User } from "src/resources/users/models/user.model";
+import { BelongsTo, Column, DataType, ForeignKey, Model, Table } from "sequelize-typescript";
+import { Restaurant } from "../../../resources/restaurants/models/restaurant.model";
 
 @Table({tableName: 'tablecategory'})
 export class TableCategory extends Model {

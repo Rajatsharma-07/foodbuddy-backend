@@ -5,8 +5,8 @@ import {
   Injectable,
   UnauthorizedException,
 } from "@nestjs/common";
-import { errors } from "src/constants/errors";
-import { UsersService } from "src/resources/users/services/users.service";
+import { errors } from "../constants/errors";
+import { UsersService } from "../resources/users/services/users.service";
 
 @Injectable()
 export class DoesUserExists implements CanActivate {

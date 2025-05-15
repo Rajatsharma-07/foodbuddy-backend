@@ -21,14 +21,14 @@ import {
   UserRetrieveInterface,
   UserUpdateInterface,
 } from "../interfaces/users.interface";
-import { errors } from "src/constants/errors";
+import { errors } from "../../../constants/errors";
 import * as bcrypt from "bcrypt";
 import { JwtService } from "@nestjs/jwt";
-import { Role } from "src/resources/roles/models/role.model";
-import { Restaurant } from "src/resources/restaurants/models/restaurant.model";
-import { is_superuser, is_admin } from "src/common/permission";
+import { Role } from "../../../resources/roles/models/role.model";
+import { Restaurant } from "../../../resources/restaurants/models/restaurant.model";
+import { is_superuser, is_admin } from "../../../common/permission";
 import { Op } from "sequelize";
-import { OTP_TYPE } from "src/constants/constants";
+import { OTP_TYPE } from "../../../constants/constants";
 import { Otp } from "../models/otp.model";
 
 @Injectable()
