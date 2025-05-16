@@ -300,7 +300,7 @@ export class UsersService {
       }
 
       let updated_user = await User.update(data, { where: { id } });
-      console.log('6');
+      
       return {
         success: true,
         data: updated_user,
