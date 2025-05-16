@@ -275,11 +275,15 @@ export class UsersService {
   ): Promise<UserUpdateInterface> {
     try {
       let curr_data = await User.findOne({ where: { id } });
-      if (!curr_data) {
-        throw new Error(errors.USER_DOES_NOT_EXISTS);
+
+      if (!await is_superuser(user)) {
+        data['is_superuser'] = curr_data?.['is_superuser'] || false;
+        data['restaurant_id'] = curr_data?.['restaurant_id'] || 1;
+        data['password'] = curr_data?.['password'] || "";
+        data['is_active'] = curr_data?.['is_active'] || true;
       }
 
-      if (!(await is_superuser(user)) && curr_data.is_active) {
+      if (!curr_data) {
         throw new Error(errors.USER_DOES_NOT_EXISTS);
       }
 
@@ -296,7 +300,7 @@ export class UsersService {
       }
 
       let updated_user = await User.update(data, { where: { id } });
-
+      
       return {
         success: true,
         data: updated_user,
