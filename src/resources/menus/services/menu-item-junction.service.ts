@@ -51,6 +51,7 @@ export class MenuItemJunctionService {
               "default_price",
               "is_active",
               "description",
+              "food_type",
             ],
             include: [
               {

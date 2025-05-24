@@ -1,6 +1,7 @@
 import { BelongsTo, Column, DataType, ForeignKey, Model, Table } from "sequelize-typescript";
 import { Restaurant } from "../../../resources/restaurants/models/restaurant.model";
 import { MenuItemCategory } from "./menu-item-category.model";
+import { FOOD_TYPE } from "src/constants/constants";
 
 @Table({tableName: 'menuitems'})
 export class MenuItems extends Model {
@@ -22,6 +23,14 @@ export class MenuItems extends Model {
         allowNull: true
     })
     declare description: string
+
+    @Column({
+        type: DataType.STRING,
+        allowNull: false,
+        defaultValue: FOOD_TYPE.VEG,
+        values: Object.values(FOOD_TYPE)
+    })
+    declare food_type: FOOD_TYPE
 
     @Column({
         type: DataType.FLOAT,

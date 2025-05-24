@@ -1,10 +1,9 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  Injectable,
-} from "@nestjs/common";
+import { ForbiddenException, Injectable } from "@nestjs/common";
+import { QueryTypes } from "sequelize";
+import { Sequelize } from "sequelize-typescript"; // this gives proper types
 import { is_superuser } from "../../../common/permission";
 import { errors } from "../../../constants/errors";
+import { Restaurant } from "../../../resources/restaurants/models/restaurant.model";
 import { User } from "../../../resources/users/models/user.model";
 import {
   TableCreateDto,
@@ -14,45 +13,51 @@ import {
 import {
   TableCreateInterface,
   TableDeleteInterface,
-  TableFetchAllInterface,
   TableRetrieveInterface,
   TableUpdateInterface,
 } from "../interfaces/tables.interface";
+import { TableCategory } from "../models/table-category.model";
 import { Tables } from "../models/table.model";
 
 @Injectable()
 export class TablesService {
+  constructor(private readonly sequelize: Sequelize) {}
   async fetch_all(
     user: Partial<User> & { role: string },
     query: TableFetchAllQueryDto
-  ): Promise<TableFetchAllInterface> {
+  ): Promise<any> {
     try {
-      if (!(await is_superuser(user)) && !query?.restaurant_id) {
-        throw new ForbiddenException(errors.RESTAURANT_NOT_SELECTED);
-      }
-
-      if (
-        !(await is_superuser(user)) &&
-        query?.restaurant_id !== user.restaurant_id
-      ) {
-        throw new ForbiddenException(errors.RESTAURANT_ACCESS_DENIED);
-      }
-
       const where_clause = {};
 
-      if (query?.restaurant_id) {
-        where_clause["restaurant_id"] = query?.restaurant_id;
+      if (!(await is_superuser(user))) {
+        where_clause["restaurant_id"] = user.restaurant_id;
       }
 
-      if (query?.category_id) {
-        where_clause["category_id"] = query?.category_id;
-      }
+      const tables = await this.sequelize.query(
+        `
+        SELECT 
+          tc.id as category_id,
+          tc.name as category_name,
+          tc.prefix as category_prefix,
+          json_agg(json_build_object(
+            'id', t.id,
+            'name', t.name,
+            'is_active', t.is_active,
+            'status', t.status
+          )) as tables
+        FROM tables t
+        JOIN tablecategory tc ON t.category_id = tc.id
+        WHERE t.restaurant_id = :restaurantId
+        GROUP BY tc.id, tc.name, tc.prefix
+      `,
+        {
+          replacements: {
+            restaurantId: user.restaurant_id,
+          },
+          type: QueryTypes.SELECT,
+        }
+      );
 
-      if (query?.status) {
-        where_clause["status"] = query?.status;
-      }
-
-      const tables = await Tables.findAll({ where: where_clause });
       return {
         success: true,
         data: tables,
@@ -67,7 +72,21 @@ export class TablesService {
     id: number
   ): Promise<TableRetrieveInterface> {
     try {
-      const table = await Tables.findOne({ where: { id } });
+      const table = await Tables.findOne({
+        where: { id },
+        include: [
+          {
+            model: TableCategory,
+            attributes: ["id", "name", "prefix"],
+            include: [
+              {
+                model: Restaurant,
+                attributes: ["id", "name"],
+              },
+            ],
+          },
+        ],
+      });
 
       if (!table) {
         throw new ForbiddenException(errors.TABLE_DOES_NOT_EXISTS);
@@ -94,14 +113,41 @@ export class TablesService {
     data: TableCreateDto
   ): Promise<TableCreateInterface> {
     try {
-      if (
-        !(await is_superuser(user)) &&
-        user.restaurant_id !== data.restaurant_id
-      ) {
-        throw new BadRequestException(errors.RESTAURANT_ACCESS_DENIED);
+      const table_category = await TableCategory.findByPk(
+        data.table_category_id
+      );
+
+      if (!table_category) {
+        throw new ForbiddenException(errors.TABLE_CATEGORY_DOES_NOT_EXISTS);
       }
 
-      const table = await Tables.create({ ...data });
+      if (user.restaurant_id !== table_category.restaurant_id) {
+        throw new ForbiddenException(errors.TABLE_CATEGORY_ACCES_DENIED);
+      }
+
+      const last_table = await Tables.findOne({
+        where: {
+          category_id: table_category.id,
+        },
+        order: [["id", "DESC"]],
+      });
+
+      let index = 0;
+
+      if (last_table) {
+        index = parseInt(last_table.name.split("-")[1]);
+      }
+
+      const tables: any = [];
+      for (let i = index; i < index + data.number_of_tables; i++) {
+        tables.push({
+          name: `${table_category.prefix}-${i + 1}`,
+          is_active: true,
+          restaurant_id: user.restaurant_id,
+          category_id: table_category.id,
+        });
+      }
+      const table = await Tables.bulkCreate(tables);
       return {
         success: true,
         data: table,
@@ -130,7 +176,10 @@ export class TablesService {
         throw new ForbiddenException(errors.TABLE_ACCES_DENIED);
       }
 
-      let updated_table = await Tables.update(data, { where: { id } });
+      let updated_table = await Tables.update(
+        { ...data, category_id: data.table_category_id },
+        { where: { id } }
+      );
 
       return {
         success: true,

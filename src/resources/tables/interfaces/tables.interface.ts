@@ -12,7 +12,7 @@ export interface TableRetrieveInterface {
 
 export interface TableCreateInterface {
   success: boolean;
-  data: Tables;
+  data: Tables[];
 }
 
 export interface TableUpdateInterface {

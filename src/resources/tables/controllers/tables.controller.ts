@@ -43,6 +43,7 @@ export class TablesController {
   }
 
   @Get(":id")
+  @UseGuards(AuthGuard)
   async retrieve(
     @Request() req,
     @Param("id", ParseIntPipe) id: number

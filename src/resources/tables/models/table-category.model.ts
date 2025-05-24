@@ -16,6 +16,12 @@ export class TableCategory extends Model {
     })
     declare name: string
 
+    @Column({
+        type: DataType.STRING,
+        allowNull: true
+    })
+    declare prefix: string
+
     @ForeignKey(() => Restaurant)
     @Column({
         type: DataType.INTEGER,

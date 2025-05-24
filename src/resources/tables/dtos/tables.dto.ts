@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { IsBoolean, IsInt, IsOptional, IsString } from "class-validator";
+import { IsBoolean, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
 
 export class TableFetchAllQueryDto {
   @IsOptional()
@@ -18,19 +18,13 @@ export class TableFetchAllQueryDto {
 }
 
 export class TableCreateDto {
-  @IsString()
-  name: string;
-
-  @IsBoolean()
-  is_active: boolean;
+  @IsNumber()
+  @IsNotEmpty()
+  number_of_tables: number;
 
   @Type(() => Number)
   @IsInt()
-  restaurant_id: number;
-
-  @Type(() => Number)
-  @IsInt()
-  category_id: number;
+  table_category_id: number;
 }
 
 export class TableUpdateDto {
@@ -54,5 +48,5 @@ export class TableUpdateDto {
   @IsOptional()
   @Type(() => Number)
   @IsInt()
-  category_id: number;
+  table_category_id: number;
 }

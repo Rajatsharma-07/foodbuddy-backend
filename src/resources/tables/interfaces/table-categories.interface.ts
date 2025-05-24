@@ -3,6 +3,9 @@ import { TableCategory } from "../models/table-category.model";
 export interface TableCategoryFetchAllInterface {
   success: boolean;
   data: TableCategory[];
+  total: number;
+  page: number;
+  limit: number;
 }
 
 export interface TableCategoryRetrieveInterface {
