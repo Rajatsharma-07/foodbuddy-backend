@@ -45,7 +45,7 @@ export class MenuItemsService {
       //   throw new ForbiddenException(errors.MENU_ITEM_ACCES_DENIED);
       // }
 
-      const { page = 1, limit, offset, category, not_in_array } = query;
+      const { page = 1, limit, offset, category, not_in_array, food_type } = query;
 
       // Pagination: Default to limit of 10 and offset of 0 if not provided
       const pagination_options = limit
@@ -61,6 +61,10 @@ export class MenuItemsService {
 
       if (category) {
         where_clause["category_id"] = category;
+      }
+
+      if (food_type) {
+        where_clause["food_type"] = food_type;
       }
 
       if (not_in_array?.length > 0) {

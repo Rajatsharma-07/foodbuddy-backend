@@ -17,6 +17,12 @@ export enum TABLE_STATUS {
   PAYMENT_RECEIVED = "payment_received",
 }
 
+export enum FOOD_TYPE {
+  VEG = "veg",
+  NON_VEG = "non-veg",
+  EGG = "egg",
+}
+
 export enum OTP_TYPE {
   LOGIN = "login",
 }

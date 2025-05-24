@@ -2,12 +2,14 @@ import { Transform, Type } from "class-transformer";
 import {
   IsArray,
   IsBoolean,
+  IsEnum,
   IsInt,
   IsNumber,
   IsOptional,
   IsString,
   Min,
 } from "class-validator";
+import { FOOD_TYPE } from "src/constants/constants";
 
 export class MenuItemFetchAllQueryDto {
   @IsOptional()
@@ -18,6 +20,10 @@ export class MenuItemFetchAllQueryDto {
   })
   @IsInt()
   category?: number;
+
+  @IsOptional()
+  @IsString()
+  food_type?: FOOD_TYPE;
 
   @IsOptional()
   @Transform(({ value }) => parseInt(value, 10))
@@ -54,6 +60,10 @@ export class MenuItemCreateDto {
   @IsString()
   description: string;
 
+  @IsString()
+  @IsEnum(FOOD_TYPE)
+  food_type: FOOD_TYPE;
+
   @Type(() => Number)
   @IsInt()
   price: number;
@@ -77,6 +87,11 @@ export class MenuItemUpdateDto {
   @IsOptional()
   @IsString()
   description: string;
+
+  @IsOptional()
+  @IsString()
+  @IsEnum(FOOD_TYPE)
+  food_type: FOOD_TYPE;
 
   @IsOptional()
   @Type(() => Number)

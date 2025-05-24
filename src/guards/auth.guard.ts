@@ -29,7 +29,7 @@ export class AuthGuard implements CanActivate {
       request.user = decoded;
       const role = decoded.role_id;
       const request_url = request.route.path.split("/api/v1")[1];
-      const request_method = request.method;
+      const request_method = request.method
 
       if (decoded.is_superuser) {
         return true;

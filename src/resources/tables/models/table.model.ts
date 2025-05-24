@@ -22,37 +22,38 @@ export class Tables extends Model {
   @Column({
     type: DataType.STRING,
     allowNull: false,
+    unique: true,
   })
-  name: string;
+  declare name: string;
 
   @Column({
     type: DataType.STRING,
     allowNull: false,
     defaultValue: TABLE_STATUS.AVAILABLE,
   })
-  status: string;
+  declare status: string;
 
   @Column({
     type: DataType.BOOLEAN,
     defaultValue: false,
   })
-  is_active: boolean;
+  declare is_active: boolean;
 
   @ForeignKey(() => TableCategory)
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
   })
-  category_id: number;
+  declare category_id: number;
   @BelongsTo(() => TableCategory)
-  category: TableCategory;
+  declare category: TableCategory;
 
   @ForeignKey(() => Restaurant)
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
   })
-  restaurant_id: number;
+  declare restaurant_id: number;
   @BelongsTo(() => Restaurant)
-  restaurant: Restaurant;
+  declare restaurant: Restaurant;
 }
